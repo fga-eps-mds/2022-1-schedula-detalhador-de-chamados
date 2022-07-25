@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from routers import chamado
+from routers import problem
 
 app = FastAPI()
 
-app.include_router(chamado.router)
+app.include_router(problem.router)
 
 @app.get("/")
 def root():
