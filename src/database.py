@@ -1,6 +1,6 @@
 from enum import auto
 from sqlalchemy import create_engine
-from sqlalchemy.exit.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
