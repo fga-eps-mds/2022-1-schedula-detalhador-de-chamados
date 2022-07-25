@@ -17,8 +17,8 @@ CREATE TABLE "public"."category" (
 CREATE TABLE "public"."problem" (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY(start 1),
     name VARCHAR(250),
-    description TEXT,
-    active BOOLEAN,
+    description TEXT NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     category_id INTEGER,
 
