@@ -28,9 +28,10 @@ class ProblemModel(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "name": "Internet",
-                "description": "Problemas relacionados à internet.",
-                "active": True
+                "name": "Falha na conexão com a internet.",
+                "description": "Falha ao conectar na internet.",
+                "active": True,
+                "category_id": 1
             }
         }
 
@@ -48,12 +49,11 @@ models.Base.metadata.create_all(bind=engine)
 #     }
 
 
-
 # @ router.post("/chamado/", tags=["Chamado"])
 # def post_chamado(data: ProblemModel, db: Session=Depends(get_db)):
 #     new_object=models.Problem(**data.dict())
 #     db.add(new_object)
-    
+
 #     db.commit()
 #     db.refresh(new_object)
 #     return{

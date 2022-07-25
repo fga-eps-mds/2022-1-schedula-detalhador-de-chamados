@@ -23,7 +23,6 @@ class CategoryModel(BaseModel):
     description: str
     active: bool
     updated_at: str
-    category_id: int
 
     class Config:
         schema_extra = {
