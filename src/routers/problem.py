@@ -39,25 +39,25 @@ class ProblemModel(BaseModel):
 models.Base.metadata.create_all(bind=engine)
 
 
-# @ router.get("/chamado/", tags=["Chamado"])
-# def get_problem(db: Session=Depends(get_db)):
-#     all_data=db.query(models.Problem).all()
-#     return{
-#         "message": "Dados buscados com sucesso",
-#         "error": None,
-#         "data": all_data,
-#     }
+@ router.get("/chamado/", tags=["Chamado"])
+def get_problem(db: Session=Depends(get_db)):
+    all_data=db.query(models.Problem).all()
+    return{
+        "message": "Dados buscados com sucesso",
+        "error": None,
+        "data": all_data,
+    }
 
 
-# @ router.post("/chamado/", tags=["Chamado"])
-# def post_chamado(data: ProblemModel, db: Session=Depends(get_db)):
-#     new_object=models.Problem(**data.dict())
-#     db.add(new_object)
+@ router.post("/chamado/", tags=["Chamado"])
+def post_chamado(data: ProblemModel, db: Session=Depends(get_db)):
+    new_object=models.Problem(**data.dict())
+    db.add(new_object)
 
-#     db.commit()
-#     db.refresh(new_object)
-#     return{
-#         "message": "Dados buscados com sucesso",
-#         "error": None,
-#         "data": new_object,
-#     }
+    db.commit()
+    db.refresh(new_object)
+    return{
+        "message": "Dados buscados com sucesso",
+        "error": None,
+        "data": new_object,
+    }

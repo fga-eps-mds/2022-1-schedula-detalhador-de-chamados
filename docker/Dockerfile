@@ -9,7 +9,7 @@ RUN apt-get update && \
 
 COPY docker/requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt .
 
 COPY ./src/ .
 

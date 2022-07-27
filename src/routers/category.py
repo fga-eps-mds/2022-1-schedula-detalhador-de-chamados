@@ -37,25 +37,25 @@ class CategoryModel(BaseModel):
 models.Base.metadata.create_all(bind=engine)
 
 
-# @router.get("/categoria/", tags=["Chamado"])
-# def get_chamado(db: Session = Depends(get_db)):
-#     all_data = db.query(models.Category).all()
-#     return{
-#         "message": "Dados buscados com sucesso",
-#         "error": None,
-#         "data": all_data,
-#     }
+@router.get("/categoria/", tags=["Chamado"])
+def get_chamado(db: Session = Depends(get_db)):
+    all_data = db.query(models.Category).all()
+    return{
+        "message": "Dados buscados com sucesso",
+        "error": None,
+        "data": all_data,
+    }
 
 
-# @router.post("/categoria/", tags=["Chamado"])
-# def post_chamado(data: CategoryModel, db: Session = Depends(get_db)):
-#     new_object = models.Category(**data.dict())
+@router.post("/categoria/", tags=["Chamado"])
+def post_chamado(data: CategoryModel, db: Session = Depends(get_db)):
+    new_object = models.Category(**data.dict())
 
-#     db.add(new_object)
-#     db.commit()
-#     db.refresh(new_object)
-#     return{
-#         "message": "Dados buscados com sucesso",
-#         "error": None,
-#         "data": new_object,
-#     }
+    db.add(new_object)
+    db.commit()
+    db.refresh(new_object)
+    return{
+        "message": "Dados buscados com sucesso",
+        "error": None,
+        "data": new_object,
+    }
