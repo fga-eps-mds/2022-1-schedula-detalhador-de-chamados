@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from routers import category
+from routers import problem, category
 
 app = FastAPI()
 
-# app.include_router(problem.router)
+app.include_router(problem.router)
 app.include_router(category.router)
 
 

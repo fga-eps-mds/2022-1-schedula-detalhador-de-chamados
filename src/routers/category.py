@@ -1,7 +1,7 @@
+import json
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from fastapi.openapi.models import Response
 from pydantic import BaseModel
 
 from src.database import engine, SessionLocal
@@ -37,45 +37,44 @@ class CategoryModel(BaseModel):
 models.Base.metadata.create_all(bind=engine)
 
 
-@router.post("/categoria/", tags=["Chamado"], response_model=CategoryModel)
-def post_category(data: CategoryModel, db: Session = Depends(get_db)):
+@router.get("/categoria/", tags=["Chamado"])
+def get_category(db: Session = Depends(get_db)):
+    try:
+        all_data = db.query(models.Category).all()
+        response_data = {
+            "message": "Dados buscados com sucesso",
+            "error": None,
+            "data": all_data,
+        }
+        return Response(content=response_data, status_code=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        response_data = {
+            "message": "Erro ao buscar dados",
+            "error": str(e),
+            "data": None
+        }
+        return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.post("/categoria/", tags=["Chamado"])
+def post_chamado(data: CategoryModel, db: Session = Depends(get_db)):
     try:
         new_object = models.Category(**data.dict())
         db.add(new_object)
         db.commit()
         db.refresh(new_object)
-        new_object = jsonable_encoder(new_object)
-        response_data = jsonable_encoder({
+        new_object = json.loads(json.dumps(new_object))
+        response_data = {
             "message": "Dado cadastrado com sucesso",
             "error": None,
             "data": new_object
-        })
-
-        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+        }
+        return Response(content=response_data, status_code=status.HTTP_200_OK)
     except Exception as e:
-        response_data = jsonable_encoder({
-            "message": "Erro ao cadastrar os dados",
+        response_data = {
+            "message": "Erro ao buscar dados",
             "error": str(e),
             "data": None
-        })
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# @router.get("/categoria/", tags=["Chamado"])
-# def get_category(db: Session = Depends(get_db)):
-#     try:
-#         all_data = db.query(models.Category).all()
-#         response_data = {
-#             "message": "Dados buscados com sucesso",
-#             "error": None,
-#             "data": all_data,
-#         }
-#         return JSONResponse(content=dict(response_data), status_code=status.HTTP_201_CREATED)
-
-#     except Exception as e:
-#         response_data = {
-#             "message": "Erro ao buscar dados",
-#             "error": str(e),
-#             "data": None
-#         }
-#         return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        }
+        return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
