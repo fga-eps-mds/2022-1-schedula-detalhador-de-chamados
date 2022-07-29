@@ -1,12 +1,11 @@
-import json
-
 from fastapi import APIRouter, Depends, status
-from fastapi.openapi.models import Response
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
 from src.database import engine, SessionLocal
 import src.models as models
+
 
 router = APIRouter()
 
@@ -39,43 +38,46 @@ class ProblemModel(BaseModel):
 models.Base.metadata.create_all(bind=engine)
 
 
-@router.get("/chamado/", tags=["Chamado"])
-def get_problem(db: Session = Depends(get_db)):
-    try:
-        all_data = db.query(models.Problem).all()
-        response_data = {
-            "message": "Dados buscados com sucesso",
-            "error": None,
-            "data": all_data,
-        }
-        return Response(content=response_data, status_code=status.HTTP_201_CREATED)
-    except Exception as e:
-        response_data = {
-            "message": "Erro ao buscar dados",
-            "error": str(e),
-            "data": None
-        }
-        return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# @router.get("/problema/", tags=["Chamado"])
+# def get_problem(db: Session = Depends(get_db)):
+#     try:
+#         all_data = db.query(models.Problem).all()
+#         response_data = {
+#             "message": "Dados buscados com sucesso",
+#             "error": None,
+#             "data": all_data,
+#         }
+#         return Response(content=response_data, status_code=status.HTTP_201_CREATED)
+#     except Exception as e:
+#         response_data = {
+#             "message": "Erro ao buscar dados",
+#             "error": str(e),
+#             "data": None
+#         }
+#         return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.post("/chamado/", tags=["Chamado"])
-def post_chamado(data: ProblemModel, db: Session = Depends(get_db)):
+@router.post("/problema/", tags=["Chamado"], response_model=ProblemModel)
+def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
     try:
         new_object = models.Problem(**data.dict())
         db.add(new_object)
 
         db.commit()
         db.refresh(new_object)
-        new_object = json.loads(json.dumps(new_object))
-        return {
-            "message": "Dados buscados com sucesso",
+        new_object = jsonable_encoder(new_object)
+        response_data = jsonable_encoder({
+            "message": "Dados cadastrados com sucesso",
             "error": None,
-            "data": new_object,
-        }
+            "data": new_object
+        })
+
+        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
     except Exception as e:
-        response_data = {
-            "message": "Erro ao buscar dados",
+        response_data = jsonable_encoder({
+            "message": "Erro ao cadastrar os dados",
             "error": str(e),
             "data": None
-        }
-        return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        })
+
+        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
