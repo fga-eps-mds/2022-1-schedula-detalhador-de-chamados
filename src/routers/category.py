@@ -108,10 +108,7 @@ async def get_category(category_id: int = Path(title="The ID of the item to get"
 @router.delete("/categoria/{category_id}", tags=["Chamado"])
 async def delete_category(category_id: int, db: Session = Depends(get_db)):
     try:
-        print(f'parametro: {category_id}')
         category = await get_category_from_db(category_id, db)
-        print(f'before jsonable encoder: {category}')
-        print(jsonable_encoder(category))
         if category:
             db.delete(category)
             db.commit()
