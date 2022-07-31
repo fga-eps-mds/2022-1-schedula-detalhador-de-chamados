@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -62,7 +62,7 @@ def post_category(data: CategoryModel, db: Session = Depends(get_db)):
 
 
 @router.get("/categoria/", tags=["Chamado"])
-def get_category(db: Session = Depends(get_db)):
+def get_categories(db: Session = Depends(get_db)):
     try:
         all_data = db.query(models.Category).all()
         all_data = [jsonable_encoder(c) for c in all_data]
@@ -72,6 +72,36 @@ def get_category(db: Session = Depends(get_db)):
             "data": all_data,
         }
         return JSONResponse(content=dict(response_data), status_code=status.HTTP_200_OK)
+
+    except Exception as e:
+        response_data = {
+            "message": "Erro ao buscar dados",
+            "error": str(e),
+            "data": None
+        }
+        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.get("/categoria/{category_id}", tags=["Chamado"])
+def get_category(category_id: int = Path(title="The ID of the item to get"), db: Session = Depends(get_db)):
+    try:
+        category = db.query(models.Category).filter_by(id=category_id).first()
+
+        if category is not None:
+            category = jsonable_encoder(category)
+            msg = "Dados buscados com sucesso"
+            status_code = status.HTTP_302_FOUND
+        else:
+            msg = "Nenhuma categoria encontrada"
+            status_code = status.HTTP_404_NOT_FOUND
+
+        response_data = {
+            "message": msg,
+            "error": None,
+            "data": category,
+        }
+
+        return JSONResponse(content=jsonable_encoder(response_data), status_code=status_code)
 
     except Exception as e:
         response_data = {
