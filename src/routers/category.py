@@ -37,8 +37,16 @@ class CategoryModel(BaseModel):
 models.Base.metadata.create_all(bind=engine)
 
 
+def get_error_response(e: Exception):
+    return {
+        "message": "Erro ao processar dados",
+        "error": str(e),
+        "data": None
+    }
+
+
 @router.post("/categoria/", tags=["Chamado"], response_model=CategoryModel)
-def post_category(data: CategoryModel, db: Session = Depends(get_db)):
+async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
     try:
         new_object = models.Category(**data.dict())
         db.add(new_object)
@@ -53,16 +61,11 @@ def post_category(data: CategoryModel, db: Session = Depends(get_db)):
 
         return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
     except Exception as e:
-        response_data = jsonable_encoder({
-            "message": "Erro ao cadastrar os dados",
-            "error": str(e),
-            "data": None
-        })
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get("/categoria/", tags=["Chamado"])
-def get_categories(db: Session = Depends(get_db)):
+async def get_categories(db: Session = Depends(get_db)):
     try:
         all_data = db.query(models.Category).all()
         all_data = [jsonable_encoder(c) for c in all_data]
@@ -74,18 +77,13 @@ def get_categories(db: Session = Depends(get_db)):
         return JSONResponse(content=dict(response_data), status_code=status.HTTP_200_OK)
 
     except Exception as e:
-        response_data = {
-            "message": "Erro ao buscar dados",
-            "error": str(e),
-            "data": None
-        }
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get("/categoria/{category_id}", tags=["Chamado"])
-def get_category(category_id: int = Path(title="The ID of the item to get"), db: Session = Depends(get_db)):
+async def get_category(category_id: int = Path(title="The ID of the item to get"), db: Session = Depends(get_db)):
     try:
-        category = db.query(models.Category).filter_by(id=category_id).first()
+        category = await get_category_from_db(category_id, db)
 
         if category is not None:
             category = jsonable_encoder(category)
@@ -104,9 +102,35 @@ def get_category(category_id: int = Path(title="The ID of the item to get"), db:
         return JSONResponse(content=jsonable_encoder(response_data), status_code=status_code)
 
     except Exception as e:
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.delete("/categoria/{category_id}", tags=["Chamado"])
+async def delete_category(category_id: int, db: Session = Depends(get_db)):
+    try:
+        print(f'parametro: {category_id}')
+        category = await get_category_from_db(category_id, db)
+        print(f'before jsonable encoder: {category}')
+        print(jsonable_encoder(category))
+        if category:
+            db.delete(category)
+            db.commit()
+            msg = f"Categoria de id = {category_id} deletada com sucesso"
+
+        else:
+            msg = f"Categoria de id = {category_id} não encontrada",
+
         response_data = {
-            "message": "Erro ao buscar dados",
-            "error": str(e),
-            "data": None
+            "message": msg,
+            "error": None,
+            "data": None,
         }
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return JSONResponse(content=response_data, status_code=status.HTTP_200_OK)
+
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+async def get_category_from_db(category_id: int, db: Session):
+    return db.query(models.Category).filter_by(id=category_id).first()
