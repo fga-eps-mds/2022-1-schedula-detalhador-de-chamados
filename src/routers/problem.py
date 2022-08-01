@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from src.database import engine, SessionLocal
-import src.models as models
+from src.models import Problem, Base
 
 
 router = APIRouter()
@@ -43,30 +43,29 @@ def get_error_response(e: Exception):
     }
 
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 
-# @router.get("/problema/", tags=["Chamado"])
-# def get_problem(db: Session = Depends(get_db)):
-#     try:
-#         all_data = db.query(models.Problem).all()
-#         response_data = {
-#             "message": "Dados buscados com sucesso",
-#             "error": None,
-#             "data": all_data,
-#         }
-#         return Response(content=response_data, status_code=status.HTTP_201_CREATED)
-#     except Exception as e:
-#         response_data = {
-#             "message": "Erro ao buscar dados",
-#             "error": str(e),
-#             "data": None
-#         }
-#         return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@router.get("/problema/", tags=["Chamado"])
+def get_problems(db: Session = Depends(get_db)):
+    try:
+        all_data = db.query(Problem).all()
+        all_data = [jsonable_encoder(c) for c in all_data]
+
+        response_data = {
+            "message": "Dados buscados com sucesso",
+            "error": None,
+            "data": all_data,
+        }
+        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @router.post("/problema/", tags=["Chamado"], response_model=ProblemModel)
 async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
     try:
-        problem = models.Problem(**data.dict())
+        problem = Problem(**data.dict())
 
         db.add(problem)
         db.commit()
@@ -114,4 +113,4 @@ async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
 
 
 async def get_problem_from_db(problem_id: int, db: Session):
-    return db.query(models.Problem).filter_by(id=problem_id).one_or_none()
+    return db.query(Problem).filter_by(id=problem_id).one_or_none()
