@@ -59,6 +59,11 @@ def get_problems(db: Session = Depends(get_db)):
         }
         return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
     except Exception as e:
+        response_data = {
+            "message": "Erro ao buscar dados",
+            "error": str(e),
+            "data": None
+        }
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
