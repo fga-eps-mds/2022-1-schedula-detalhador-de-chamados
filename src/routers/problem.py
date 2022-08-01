@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from src.database import engine, SessionLocal
 from src.models import Problem, Base
-
+import src.models as models
 
 router = APIRouter()
 
@@ -27,13 +27,14 @@ class ProblemModel(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "name": "Falha na conexão com a internet.",
+                "name": "Internet",
                 "description": "Falha ao conectar na internet.",
                 "active": True,
                 "category_id": 1
             }
         }
 
+models.Base.metadata.create_all(bind=engine)
 
 def get_error_response(e: Exception):
     return {
@@ -42,14 +43,10 @@ def get_error_response(e: Exception):
         "data": None
     }
 
-
-Base.metadata.create_all(bind=engine)
-
-
 @router.get("/problema/", tags=["Chamado"])
-def get_problems(db: Session = Depends(get_db)):
+async def get_problems(db: Session = Depends(get_db)):
     try:
-        all_data = db.query(Problem).all()
+        all_data = db.query(models.Problem).all()
         all_data = [jsonable_encoder(c) for c in all_data]
 
         response_data = {
@@ -64,6 +61,30 @@ def get_problems(db: Session = Depends(get_db)):
             "error": str(e),
             "data": None
         }
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@router.get("/problema/{problem_id}", tags=["Problema"])
+
+async def get_problem(problem_id: int = Path(title="The Id of the item to get"), db: Session=Depends(get_db)):
+    try:
+        problem = await get_problem_from_db(problem_id,db)
+
+        if problem is not None:
+            problem = jsonable_encoder(problem)
+            message = "Dados buscados com exito"
+            status_code = status.HTTP_302_FOUND
+        else:
+            msg = "Nenhum problema encontrado"
+            status_code = status.HTTP_404_NOT_FOUND
+
+        response_data = {
+            "message": message,
+            "error": None,
+            "data": problem,
+        }        
+        return JSONResponse(content=jsonable_encoder(response_data), status_code= status_code)
+    
+    except Exception as e:
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
