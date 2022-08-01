@@ -35,6 +35,14 @@ class ProblemModel(BaseModel):
         }
 
 
+def get_error_response(e: Exception):
+    return {
+        "message": "Erro ao processar dados",
+        "error": str(e),
+        "data": None
+    }
+
+
 models.Base.metadata.create_all(bind=engine)
 
 
@@ -55,21 +63,19 @@ models.Base.metadata.create_all(bind=engine)
 #             "data": None
 #         }
 #         return Response(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @router.post("/problema/", tags=["Chamado"], response_model=ProblemModel)
-def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
+async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
     try:
-        new_object = models.Problem(**data.dict())
-        db.add(new_object)
+        problem = models.Problem(**data.dict())
 
+        db.add(problem)
         db.commit()
-        db.refresh(new_object)
-        new_object = jsonable_encoder(new_object)
+        db.refresh(problem)
+        problem = jsonable_encoder(problem)
         response_data = jsonable_encoder({
             "message": "Dados cadastrados com sucesso",
             "error": None,
-            "data": new_object
+            "data": problem
         })
 
         return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
@@ -81,3 +87,31 @@ def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
         })
 
         return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.delete("/problema/{problem_id}", tags=["Chamado"])
+async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
+    try:
+        problem = await get_problem_from_db(problem_id, db)
+        if problem:
+            db.delete(problem)
+            db.commit()
+            msg = f"Problema de id = {problem_id} deletado com sucesso"
+
+        else:
+            msg = f"Problema de id = {problem_id} não encontrado",
+
+        response_data = {
+            "message": msg,
+            "error": None,
+            "data": None,
+        }
+
+        return JSONResponse(content=response_data, status_code=status.HTTP_200_OK)
+
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+async def get_problem_from_db(problem_id: int, db: Session):
+    return db.query(models.Problem).filter_by(id=problem_id).one_or_none()
