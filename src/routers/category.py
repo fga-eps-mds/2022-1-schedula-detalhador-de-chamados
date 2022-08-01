@@ -129,5 +129,37 @@ async def delete_category(category_id: int, db: Session = Depends(get_db)):
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@router.put("/categoria/{category_id}", tags=["Chamado"])
+async def update_category(data: CategoryModel, category_id: int = Path(title="The ID of the item to update"), db: Session = Depends(get_db)):
+    try:
+        input_values = models.Category(**data.dict())
+        category = await get_category_from_db(category_id, db)
+        if category:
+            category.name = input_values.name
+            category.description = input_values.description
+            category.active = input_values.active
+
+            db.add(category)
+            db.commit()
+            db.refresh(category)
+
+            category = jsonable_encoder(category)
+            response_data = jsonable_encoder({
+                "message": "Dado atualizado com sucesso",
+                "error": None,
+                "data": category
+            })
+        else:
+            response_data = jsonable_encoder({
+                "message": f"Categoria de id = {category_id} não encontrada",
+                "error": None,
+                "data": None
+            })
+
+        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 async def get_category_from_db(category_id: int, db: Session):
-    return db.query(models.Category).filter_by(id=category_id).first()
+    return db.query(models.Category).filter_by(id=category_id).one_or_none()
