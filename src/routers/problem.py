@@ -88,6 +88,40 @@ async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
         return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@router.put("/problema/{problem_id}", tags=["Chamado"])
+async def update_problem(data: ProblemModel, problem_id: int = Path(title="The ID of the item to update"), db: Session = Depends(get_db)):
+    try:
+        input_values = Problem(**data.dict())
+        print(problem_id)
+        problem = await get_problem_from_db(problem_id, db)
+        print(jsonable_encoder(problem))
+        if problem:
+            problem.name = input_values.name
+            problem.description = input_values.description
+            problem.active = input_values.active
+
+            db.add(problem)
+            db.commit()
+            db.refresh(problem)
+
+            problem = jsonable_encoder(problem)
+            response_data = jsonable_encoder({
+                "message": "Dado atualizado com sucesso",
+                "error": None,
+                "data": problem
+            })
+        else:
+            response_data = jsonable_encoder({
+                "message": f"Problema de id = {problem_id} não encontrado",
+                "error": None,
+                "data": None
+            })
+
+        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @router.delete("/problema/{problem_id}", tags=["Chamado"])
 async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
     try:
