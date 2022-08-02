@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
 from src.database import engine, SessionLocal
-import src.models as models
+from src.models import Category, Base
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -34,7 +34,7 @@ class CategoryModel(BaseModel):
         }
 
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 
 def get_error_response(e: Exception):
@@ -45,10 +45,10 @@ def get_error_response(e: Exception):
     }
 
 
-@router.post("/categoria/", tags=["Chamado"], response_model=CategoryModel)
+@router.post("/categoria/", tags=["Categoria"], response_model=CategoryModel)
 async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
     try:
-        new_object = models.Category(**data.dict())
+        new_object = Category(**data.dict())
         db.add(new_object)
         db.commit()
         db.refresh(new_object)
@@ -64,10 +64,10 @@ async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.get("/categoria/", tags=["Chamado"])
+@router.get("/categoria/", tags=["Categoria"])
 async def get_categories(db: Session = Depends(get_db)):
     try:
-        all_data = db.query(models.Category).all()
+        all_data = db.query(Category).all()
         all_data = [jsonable_encoder(c) for c in all_data]
         response_data = {
             "message": "Dados buscados com sucesso",
@@ -80,7 +80,7 @@ async def get_categories(db: Session = Depends(get_db)):
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.get("/categoria/{category_id}", tags=["Chamado"])
+@router.get("/categoria/{category_id}", tags=["Categoria"])
 async def get_category(category_id: int = Path(title="The ID of the item to get"), db: Session = Depends(get_db)):
     try:
         category = await get_category_from_db(category_id, db)
@@ -105,12 +105,14 @@ async def get_category(category_id: int = Path(title="The ID of the item to get"
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/categoria/{category_id}", tags=["Chamado"])
+@router.delete("/categoria/{category_id}", tags=["Categoria"])
 async def delete_category(category_id: int, db: Session = Depends(get_db)):
     try:
         category = await get_category_from_db(category_id, db)
         if category:
-            db.delete(category)
+            category.active = False
+            await update_category_on_db(category_id, category, db)
+            # db.delete(category)
             db.commit()
             msg = f"Categoria de id = {category_id} deletada com sucesso"
 
@@ -129,20 +131,12 @@ async def delete_category(category_id: int, db: Session = Depends(get_db)):
         return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.put("/categoria/{category_id}", tags=["Chamado"])
+@router.put("/categoria/{category_id}", tags=["Categoria"])
 async def update_category(data: CategoryModel, category_id: int = Path(title="The ID of the item to update"), db: Session = Depends(get_db)):
     try:
-        input_values = models.Category(**data.dict())
-        category = await get_category_from_db(category_id, db)
+        input_values = Category(**data.dict())
+        category = await update_category_on_db(category_id, input_values, db)
         if category:
-            category.name = input_values.name
-            category.description = input_values.description
-            category.active = input_values.active
-
-            db.add(category)
-            db.commit()
-            db.refresh(category)
-
             category = jsonable_encoder(category)
             response_data = jsonable_encoder({
                 "message": "Dado atualizado com sucesso",
@@ -162,4 +156,19 @@ async def update_category(data: CategoryModel, category_id: int = Path(title="Th
 
 
 async def get_category_from_db(category_id: int, db: Session):
-    return db.query(models.Category).filter_by(id=category_id).one_or_none()
+    return db.query(Category).filter_by(id=category_id).one_or_none()
+
+
+async def update_category_on_db(category_id: int, input_values: Category, db: Session):
+
+    category = await get_category_from_db(category_id, db)
+    if category:
+        category.name = input_values.name
+        category.description = input_values.description
+        category.active = input_values.active
+
+        db.add(category)
+        db.commit()
+        db.refresh(category)
+
+    return category
