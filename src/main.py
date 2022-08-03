@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from routers import problem, category
+
+from routers import category, problem
 
 app = FastAPI()
 

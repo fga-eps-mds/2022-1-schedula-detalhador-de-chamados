@@ -1,6 +1,8 @@
 from datetime import timezone
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, TIMESTAMP
+
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.sql import func
+
 from database import Base
 
 

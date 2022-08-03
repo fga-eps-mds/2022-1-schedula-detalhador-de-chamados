@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, Path, status
-from fastapi.responses import JSONResponse
+from typing import Union
+
+from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from src.database import engine, SessionLocal
-from src.models import Problem, Base
-import src.models as models
+
+from database import SessionLocal, engine
+from models import Base, Problem
 
 router = APIRouter()
 
@@ -21,7 +23,7 @@ def get_db():
 class ProblemModel(BaseModel):
     name: str
     description: str
-    active: bool
+    active: bool = True
     category_id: int
 
     class Config:
@@ -29,12 +31,13 @@ class ProblemModel(BaseModel):
             "example": {
                 "name": "Internet",
                 "description": "Falha ao conectar na internet.",
-                "active": True,
                 "category_id": 1
             }
         }
 
-models.Base.metadata.create_all(bind=engine)
+
+Base.metadata.create_all(bind=engine)
+
 
 def get_error_response(e: Exception):
     return {
@@ -43,52 +46,55 @@ def get_error_response(e: Exception):
         "data": None
     }
 
-@router.get("/problema/", tags=["Chamado"])
-async def get_problems(db: Session = Depends(get_db)):
-    try:
-        all_data = db.query(models.Problem).all()
-        all_data = [jsonable_encoder(c) for c in all_data]
 
-        response_data = {
-            "message": "Dados buscados com sucesso",
-            "error": None,
-            "data": all_data,
-        }
-        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+@router.get("/problema/", tags=["Problema"])
+async def get_problems(
+        problem_id: Union[int, None] = None,
+        db: Session = Depends(get_db)
+):
+    try:
+        if problem_id:
+            problem = db.query(Problem).filter_by(id=problem_id).one_or_none()
+            if problem:
+                problem = jsonable_encoder(problem)
+                message = "Dados buscados com exito"
+                status_code = status.HTTP_200_OK
+            else:
+                message = "Nenhum problema encontrado"
+                status_code = status.HTTP_200_OK
+
+            response_data = {
+                "message": message,
+                "error": None,
+                "data": problem,
+            }
+            return JSONResponse(
+                content=jsonable_encoder(response_data),
+                status_code=status_code)
+
+        else:
+            all_data = db.query(Problem).filter_by(active=True).all()
+            all_data = [jsonable_encoder(c) for c in all_data]
+
+            response_data = {
+                "message": "Dados buscados com sucesso",
+                "error": None,
+                "data": all_data,
+            }
+            return JSONResponse(
+                content=response_data,
+                status_code=status.HTTP_201_CREATED)
     except Exception as e:
         response_data = {
             "message": "Erro ao buscar dados",
             "error": str(e),
             "data": None
         }
-        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@router.get("/problema/{problem_id}", tags=["Problema"])
-
-async def get_problem(problem_id: int = Path(title="The Id of the item to get"), db: Session=Depends(get_db)):
-    try:
-        problem = await get_problem_from_db(problem_id,db)
-
-        if problem is not None:
-            problem = jsonable_encoder(problem)
-            message = "Dados buscados com exito"
-            status_code = status.HTTP_302_FOUND
-        else:
-            msg = "Nenhum problema encontrado"
-            status_code = status.HTTP_404_NOT_FOUND
-
-        response_data = {
-            "message": message,
-            "error": None,
-            "data": problem,
-        }        
-        return JSONResponse(content=jsonable_encoder(response_data), status_code= status_code)
-    
-    except Exception as e:
-        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content=get_error_response(e),
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.post("/problema/", tags=["Chamado"], response_model=ProblemModel)
+@router.post("/problema/", tags=["Problema"], response_model=ProblemModel)
 async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
     try:
         problem = Problem(**data.dict())
@@ -103,7 +109,9 @@ async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
             "data": problem
         })
 
-        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+        return JSONResponse(
+            content=response_data,
+            status_code=status.HTTP_201_CREATED)
     except Exception as e:
         response_data = jsonable_encoder({
             "message": "Erro ao cadastrar os dados",
@@ -111,15 +119,16 @@ async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
             "data": None
         })
 
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content=response_data,
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/problema/{problem_id}", tags=["Chamado"])
+@router.delete("/problema/{problem_id}", tags=["Problema"])
 async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
     try:
-        problem = await get_problem_from_db(problem_id, db)
+        problem = db.query(Problem).filter_by(id=problem_id).one_or_none()
         if problem:
-            db.delete(problem)
+            problem.active = False
             db.commit()
             msg = f"Problema de id = {problem_id} deletado com sucesso"
 
@@ -132,11 +141,10 @@ async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
             "data": None,
         }
 
-        return JSONResponse(content=response_data, status_code=status.HTTP_200_OK)
+        return JSONResponse(
+            content=response_data,
+            status_code=status.HTTP_200_OK)
 
     except Exception as e:
-        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-async def get_problem_from_db(problem_id: int, db: Session):
-    return db.query(Problem).filter_by(id=problem_id).one_or_none()
+        return JSONResponse(content=get_error_response(e),
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
