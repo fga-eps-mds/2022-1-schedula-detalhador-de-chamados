@@ -1,6 +1,6 @@
-from datetime import timezone
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, TIMESTAMP
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.sql import func
+
 from database import Base
 
 
@@ -13,7 +13,7 @@ class Category(Base):
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),
-        server_onupdate=func.current_timestamp(timezone.utc)
+        onupdate=func.current_timestamp(),
     )
 
 
@@ -26,6 +26,6 @@ class Problem(Base):
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),
-        server_onupdate=func.current_timestamp(timezone.utc)
+        onupdate=func.current_timestamp()
     )
     category_id = Column(Integer, ForeignKey(Category.id), primary_key=True)

@@ -7,11 +7,13 @@ WORKDIR /home
 RUN apt-get update && \
     apt-get -qq -y install netcat-openbsd
 
-COPY docker/requirements.txt .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
 COPY ./src/ .
+
+COPY ./tests/ .
 
 COPY ./start.sh .
 

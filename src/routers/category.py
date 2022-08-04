@@ -1,12 +1,13 @@
-
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.params import Path
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from pydantic.class_validators import Union
 
-from src.database import engine, SessionLocal
-import src.models as models
+from src.database import SessionLocal, engine
 from sqlalchemy.orm import Session
+from src.models import Base, Category
 
 router = APIRouter()
 
@@ -29,18 +30,25 @@ class CategoryModel(BaseModel):
             "example": {
                 "name": "Internet",
                 "description": "Problemas relacionados à internet.",
-                "active": True
             }
         }
 
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 
-@router.post("/categoria/", tags=["Chamado"], response_model=CategoryModel)
-def post_category(data: CategoryModel, db: Session = Depends(get_db)):
+def get_error_response(e: Exception):
+    return {
+        "message": "Erro ao processar dados",
+        "error": str(e),
+        "data": None
+    }
+
+
+@router.post("/categoria/", tags=["Categoria"], response_model=CategoryModel)
+async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
     try:
-        new_object = models.Category(**data.dict())
+        new_object = Category(**data.dict())
         db.add(new_object)
         db.commit()
         db.refresh(new_object)
@@ -51,32 +59,104 @@ def post_category(data: CategoryModel, db: Session = Depends(get_db)):
             "data": new_object
         })
 
-        return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+        return JSONResponse(
+            content=response_data,
+            status_code=status.HTTP_201_CREATED)
     except Exception as e:
+        return JSONResponse(content=get_error_response(e),
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.get("/categoria/", tags=["Categoria"])
+async def get_categories(
+        category_id: Union[int, None] = None,
+        db: Session = Depends(get_db)
+):
+    try:
+        if category_id:
+            category = db.query(Category).filter_by(id=category_id).all()
+
+            if category is not None:
+                category = jsonable_encoder(category)
+                message = "Dados buscados com sucesso"
+                status_code = status.HTTP_200_OK
+            else:
+                message = "Nenhuma categoria encontrada"
+                status_code = status.HTTP_200_OK
+
+            response_data = {
+                "message": message,
+                "error": None,
+                "data": category,
+            }
+
+            return JSONResponse(
+                content=jsonable_encoder(response_data),
+                status_code=status_code)
+        else:
+            all_data = db.query(Category).filter_by(active=True).all()
+            all_data = [jsonable_encoder(c) for c in all_data]
+            response_data = {
+                "message": "Dados buscados com sucesso",
+                "error": None,
+                "data": all_data,
+            }
+            return JSONResponse(
+                content=dict(response_data),
+                status_code=status.HTTP_200_OK)
+
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e),
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.delete("/categoria/{category_id}", tags=["Categoria"])
+async def delete_category(category_id: int, db: Session = Depends(get_db)):
+    try:
+        category = db.query(Category).filter_by(id=category_id).one_or_none()
+        if category:
+            category.active = False
+            db.commit()
+            message = f"Categoria de id = {category_id} deletada com sucesso"
+
+        else:
+            message = f"Categoria de id = {category_id} não encontrada"
+
+        response_data = {
+            "message": message,
+            "error": None,
+            "data": None,
+        }
+
+        return JSONResponse(
+            content=response_data,
+            status_code=status.HTTP_200_OK)
+
+    except Exception as e:
+        return JSONResponse(content=get_error_response(e),
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.put("/categoria/{category_id}", tags=["Categoria"])
+async def update_category(
+        data: CategoryModel,
+        category_id: int = Path(title="The ID of the item to update"),
+        db: Session = Depends(get_db)
+):
+    try:
+        db.query(Category).filter_by(id=category_id).update(data.dict())
+        db.commit()
+
+        # data = jsonable_encoder(category)
         response_data = jsonable_encoder({
-            "message": "Erro ao cadastrar os dados",
-            "error": str(e),
+            "message": "Dado atualizado com sucesso",
+            "error": None,
             "data": None
         })
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@router.get("/categoria/", tags=["Chamado"])
-def get_category(db: Session = Depends(get_db)):
-    try:
-        all_data = db.query(models.Category).all()
-        all_data = [jsonable_encoder(c) for c in all_data]
-        response_data = {
-            "message": "Dados buscados com sucesso",
-            "error": None,
-            "data": all_data,
-        }
-        return JSONResponse(content=dict(response_data), status_code=status.HTTP_200_OK)
-
+        return JSONResponse(
+            content=response_data,
+            status_code=status.HTTP_200_OK)
     except Exception as e:
-        response_data = {
-            "message": "Erro ao buscar dados",
-            "error": str(e),
-            "data": None
-        }
-        return JSONResponse(content=response_data, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content=get_error_response(e),
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
