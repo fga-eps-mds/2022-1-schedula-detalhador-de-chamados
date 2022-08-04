@@ -13,7 +13,6 @@ from models import Base, Category
 router = APIRouter()
 
 
-
 class CategoryModel(BaseModel):
     name: str
     description: str
