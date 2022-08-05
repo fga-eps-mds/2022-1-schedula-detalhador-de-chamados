@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
@@ -43,13 +43,15 @@ def get_error_response(e: Exception):
 @router.get("/problema/", tags=["Problema"])
 async def get_problems(
         problem_id: Union[int, None] = None,
+        category_id: Union[int, None] = None,
         db: Session = Depends(get_db)
 ):
+    all_data: List[Problem] = []
     try:
         if problem_id:
             problem = db.query(Problem).filter_by(id=problem_id).one_or_none()
             if problem:
-                problem = jsonable_encoder(problem)
+                all_data.append(problem)
                 message = "Dados buscados com exito"
                 status_code = status.HTTP_200_OK
             else:
@@ -64,49 +66,23 @@ async def get_problems(
             return JSONResponse(
                 content=jsonable_encoder(response_data),
                 status_code=status_code)
-
+        elif category_id:
+            all_data = db.query(Problem).filter_by(category_id=category_id, active=True).all()
         else:
             all_data = db.query(Problem).filter_by(active=True).all()
-            all_data = [jsonable_encoder(c) for c in all_data]
+        all_data = [jsonable_encoder(c) for c in all_data]
 
-            response_data = {
-                "message": "Dados buscados com sucesso",
-                "error": None,
-                "data": all_data,
-            }
-            return JSONResponse(
-                content=response_data,
-                status_code=status.HTTP_201_CREATED)
-    except Exception as e:
         response_data = {
-            "message": "Erro ao buscar dados",
-            "error": str(e),
-            "data": None
+            "message": "Dados buscados com sucesso",
+            "error": None,
+            "data": all_data,
         }
+        return JSONResponse(
+            content=response_data,
+            status_code=status.HTTP_201_CREATED)
+    except Exception as e:
         return JSONResponse(content=get_error_response(e),
                             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get("/problema/{problem_id}", tags=["Problema"])
-async def get_problem(problem_id: int = Path(title="The ID of the item to get"), db: Session = Depends(get_db)):
-    try:
-        problem = db.query(Problem).filter_by(id=problem_id).one_or_none()
-        if problem is not None:
-            problem = jsonable_encoder(problem)
-            msg = "Dados buscados com sucesso"
-            status_code = status.HTTP_302_FOUND
-        else:
-            msg = "Nenhum problema encontrado"
-            status_code = status.HTTP_404_NOT_FOUND
-
-        response_data = {
-            "message": msg,
-            "error": None,
-            "data": problem,
-        }
-        return JSONResponse(content=jsonable_encoder(response_data), status_code=status_code)
-    except Exception as e:
-        return JSONResponse(content=get_error_response(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.post("/problema/", tags=["Problema"], response_model=ProblemModel)
