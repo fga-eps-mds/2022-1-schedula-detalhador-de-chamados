@@ -3,7 +3,7 @@ version: "3"
 services:
   detalhador-de-chamados:
     build:
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
       context: .
     env_file: .env
     container_name: detalhador-de-chamados
