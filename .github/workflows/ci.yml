@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  workflow_call:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches:
+      - master
+      - main
+      - develop
+    types: [opened, synchronize, reopened]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create a docker network
+      run: docker network create schedula-network
+      
+    - name: Build the Docker image
+      run: docker-compose build
+
+  
+  lint:
+  
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create a docker network
+      run: docker network create schedula-network  
+      
+    - name: Build the Docker image
+      run: docker-compose build
+
+    - name: Run the docker server
+      run: docker-compose up -d
+    
+    - name: Run isort
+      run: docker-compose run detalhador-de-chamados bash -c "isort *.py --diff"
+      
+    - name: Run Flake8
+      run: docker-compose run detalhador-de-chamados bash -c "flake8"
+  
+  tests:
+  
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create a docker network
+      run: docker network create schedula-network  
+      
+    - name: Build the Docker image
+      run: docker-compose build
+
+    - name: Run the docker aplication
+      run: docker-compose up -d
+    
+    - name: Run tests
+      run: docker-compose run detalhador-de-chamados bash -c "pytest -vv --cov"
+  
