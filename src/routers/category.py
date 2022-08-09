@@ -5,25 +5,17 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pydantic.class_validators import Union
 
-from src.database import SessionLocal, engine
+from src.database import engine, get_db
 from sqlalchemy.orm import Session
 from src.models import Base, Category
 
 router = APIRouter()
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 class CategoryModel(BaseModel):
     name: str
     description: str
-    active: bool
+    active: bool = True
 
     class Config:
         schema_extra = {
