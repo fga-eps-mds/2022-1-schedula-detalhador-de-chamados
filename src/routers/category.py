@@ -120,11 +120,7 @@ async def delete_category(category_id: int, db: Session = Depends(get_db)):
         else:
             message = f"Categoria de id = {category_id} não encontrada"
 
-        response_data = {
-            "message": message,
-            "error": None,
-            "data": None,
-        }
+        response_data = {"message": message, "error": None, "data": None}
 
         return JSONResponse(
             content=response_data, status_code=status.HTTP_200_OK
@@ -157,6 +153,18 @@ async def update_category(
                     "message": "Dado atualizado com sucesso",
                     "error": None,
                     "data": category_data,
+                }
+            )
+
+            return JSONResponse(
+                content=response_data, status_code=status.HTTP_200_OK
+            )
+        else:
+            response_data = jsonable_encoder(
+                {
+                    "message": "Categoria não encontrada",
+                    "error": None,
+                    "data": None,
                 }
             )
 
