@@ -26,6 +26,6 @@ class Problem(Base):
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp()
+        onupdate=func.current_timestamp(),
     )
-    category_id = Column(Integer, ForeignKey(Category.id), primary_key=True)
+    category_id = Column(Integer, ForeignKey(Category.id))

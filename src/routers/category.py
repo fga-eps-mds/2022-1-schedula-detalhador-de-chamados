@@ -1,4 +1,3 @@
-
 from typing import Union
 
 from fastapi import APIRouter, Depends, Path, status
@@ -34,7 +33,7 @@ def get_error_response(e: Exception):
     return {
         "message": "Erro ao processar dados",
         "error": str(e),
-        "data": None
+        "data": None,
     }
 
 
@@ -46,24 +45,27 @@ async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_object)
         new_object = jsonable_encoder(new_object)
-        response_data = jsonable_encoder({
-            "message": "Dado cadastrado com sucesso",
-            "error": None,
-            "data": new_object
-        })
+        response_data = jsonable_encoder(
+            {
+                "message": "Dado cadastrado com sucesso",
+                "error": None,
+                "data": new_object,
+            }
+        )
 
         return JSONResponse(
-            content=response_data,
-            status_code=status.HTTP_201_CREATED)
+            content=response_data, status_code=status.HTTP_201_CREATED
+        )
     except Exception as e:
-        return JSONResponse(content=get_error_response(e),
-                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/categoria/", tags=["Categoria"])
 async def get_categories(
-        category_id: Union[int, None] = None,
-        db: Session = Depends(get_db)
+    category_id: Union[int, None] = None, db: Session = Depends(get_db)
 ):
     try:
         if category_id:
@@ -85,7 +87,8 @@ async def get_categories(
 
             return JSONResponse(
                 content=jsonable_encoder(response_data),
-                status_code=status_code)
+                status_code=status_code,
+            )
         else:
             all_data = db.query(Category).filter_by(active=True).all()
             all_data = [jsonable_encoder(c) for c in all_data]
@@ -95,12 +98,14 @@ async def get_categories(
                 "data": all_data,
             }
             return JSONResponse(
-                content=dict(response_data),
-                status_code=status.HTTP_200_OK)
+                content=dict(response_data), status_code=status.HTTP_200_OK
+            )
 
     except Exception as e:
-        return JSONResponse(content=get_error_response(e),
-                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.delete("/categoria/{category_id}", tags=["Categoria"])
@@ -115,41 +120,59 @@ async def delete_category(category_id: int, db: Session = Depends(get_db)):
         else:
             message = f"Categoria de id = {category_id} não encontrada"
 
-        response_data = {
-            "message": message,
-            "error": None,
-            "data": None,
-        }
+        response_data = {"message": message, "error": None, "data": None}
 
         return JSONResponse(
-            content=response_data,
-            status_code=status.HTTP_200_OK)
+            content=response_data, status_code=status.HTTP_200_OK
+        )
 
     except Exception as e:
-        return JSONResponse(content=get_error_response(e),
-                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.put("/categoria/{category_id}", tags=["Categoria"])
 async def update_category(
-        data: CategoryModel,
-        category_id: int = Path(title="The ID of the item to update"),
-        db: Session = Depends(get_db)
+    data: CategoryModel,
+    category_id: int = Path(title="The ID of the item to update"),
+    db: Session = Depends(get_db),
 ):
     try:
-        db.query(Category).filter_by(id=category_id).update(data.dict())
-        db.commit()
+        category = (
+            db.query(Category).filter_by(id=category_id).update(data.dict())
+        )
+        if category:
+            db.commit()
+            category_data = db.query(Category).filter_by(id=category_id).one()
+            category_data = jsonable_encoder(category_data)
+            # data = jsonable_encoder(category)
+            response_data = jsonable_encoder(
+                {
+                    "message": "Dado atualizado com sucesso",
+                    "error": None,
+                    "data": category_data,
+                }
+            )
 
-        # data = jsonable_encoder(category)
-        response_data = jsonable_encoder({
-            "message": "Dado atualizado com sucesso",
-            "error": None,
-            "data": None
-        })
+            return JSONResponse(
+                content=response_data, status_code=status.HTTP_200_OK
+            )
+        else:
+            response_data = jsonable_encoder(
+                {
+                    "message": "Categoria não encontrada",
+                    "error": None,
+                    "data": None,
+                }
+            )
 
-        return JSONResponse(
-            content=response_data,
-            status_code=status.HTTP_200_OK)
+            return JSONResponse(
+                content=response_data, status_code=status.HTTP_200_OK
+            )
     except Exception as e:
-        return JSONResponse(content=get_error_response(e),
-                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
