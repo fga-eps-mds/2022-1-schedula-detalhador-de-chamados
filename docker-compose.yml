@@ -10,7 +10,7 @@ services:
     volumes:
       - "./src/:/home/src/"
     ports:
-      - ${APP_PORT}:${APP_PORT}
+      - ${APP_PORT_DETALHADOR}:${APP_PORT_DETALHADOR}
     depends_on:
       - db
 
