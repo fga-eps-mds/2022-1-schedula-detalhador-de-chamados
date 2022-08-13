@@ -28,22 +28,6 @@ class ProblemModel(BaseModel):
         }
 
 
-class ProblemUpdateModel(BaseModel):
-    name: str
-    description: str
-    active: bool = True
-    category_id: int
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "Internet",
-                "description": "Falha ao conectar ao Banco de Dados.",
-                "category_id": 1,
-            }
-        }
-
-
 Base.metadata.create_all(bind=engine)
 
 
@@ -57,7 +41,9 @@ def get_error_response(e: Exception):
 
 @router.get("/problema/", tags=["Problema"])
 async def get_problems(
-    problem_id: Union[int, None] = None, db: Session = Depends(get_db)
+    problem_id: Union[int, None] = None,
+    db: Session = Depends(get_db),
+    category_id: Union[int, None] = None,
 ):
     try:
         if problem_id:
@@ -81,7 +67,14 @@ async def get_problems(
             )
 
         else:
-            all_data = db.query(Problem).filter_by(active=True).all()
+            if category_id:
+                all_data = (
+                    db.query(Problem)
+                    .filter_by(category_id=category_id, active=True)
+                    .all()
+                )
+            else:
+                all_data = db.query(Problem).filter_by(active=True).all()
             all_data = [jsonable_encoder(c) for c in all_data]
 
             response_data = {
@@ -90,7 +83,7 @@ async def get_problems(
                 "data": all_data,
             }
             return JSONResponse(
-                content=response_data, status_code=status.HTTP_201_CREATED
+                content=response_data, status_code=status.HTTP_200_OK
             )
     except Exception as e:
         response_data = {
@@ -146,10 +139,10 @@ async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
         if problem:
             problem.active = False
             db.commit()
-            msg = f"Problema de id = {problem_id} deletado com sucesso"
+            msg = f"Problema de id: {problem_id} deletado com sucesso"
 
         else:
-            msg = (f"Problema de id = {problem_id} não encontrado",)
+            msg = (f"Problema de id: {problem_id} não encontrado",)
 
         response_data = {"message": msg, "error": None, "data": None}
 
@@ -165,12 +158,10 @@ async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/problema/{problem_id}",
-    tags=["Problema"],
-    response_model=ProblemUpdateModel,
+    "/problema/{problem_id}", tags=["Problema"],
 )
 async def put_problem(
-    problem_id: int, data: ProblemUpdateModel, db: Session = Depends(get_db)
+    problem_id: int, data: ProblemModel, db: Session = Depends(get_db)
 ):
     try:
         problem = (
