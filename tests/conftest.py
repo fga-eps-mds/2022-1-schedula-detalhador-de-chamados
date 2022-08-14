@@ -15,11 +15,12 @@ import models
 from database import get_db
 from main import app
 
-engine = create_engine("sqlite:///test.db", connect_args={'check_same_thread': False})
+engine = create_engine(
+    "sqlite:///test.db", connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine)
+    autocommit=False, autoflush=False, bind=engine
+)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -31,12 +32,11 @@ def session():
     with open("data/insert_categoria.sql", "r") as f:
         session.execute(f.read())
         session.commit()
-    
+
     with open("data/insert_problem.sql", "r") as f:
         session.execute(f.read())
         session.commit()
-    
-    
+
     yield session
     os.remove("test.db")
 
