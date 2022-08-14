@@ -15,7 +15,7 @@ import models
 from database import get_db
 from main import app
 
-engine = create_engine("sqlite:///test.db")
+engine = create_engine("sqlite:///test.db", connect_args={'check_same_thread': False})
 TestingSessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
@@ -28,10 +28,15 @@ models.Base.metadata.create_all(bind=engine)
 def session():
     session = TestingSessionLocal()
 
-    # Para o momento em que se for realizar testes nos enpoints
-    # with open("data/insert_user.sql", "r") as f:
-    #     session.execute(f.read())
-    #     session.commit()
+    with open("data/insert_categoria.sql", "r") as f:
+        session.execute(f.read())
+        session.commit()
+    
+    with open("data/insert_problem.sql", "r") as f:
+        session.execute(f.read())
+        session.commit()
+    
+    
     yield session
     os.remove("test.db")
 
