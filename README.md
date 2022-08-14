@@ -26,3 +26,34 @@
     $ docker-compose up --build -d
 ```
 acessar o site: `http://localhost:5000/`
+
+
+## Testes
+
+```bash
+docker exec -it detalhador-de-chamados pytest --cov -vv
+```
+## Lint
+
+Instalando dependencias
+
+```
+pip install isort flake8 autopep8
+```
+
+Verifica o pep8 nos arquivos do projeto
+``` 
+flake8 **/*.py
+``` 
+Verifica os imports da aplicação
+``` 
+isort **/*.py --diff
+``` 
+Resolve problemas com a ordenação dos imports
+``` 
+isort --atomic .
+```
+Utiliza o autopep8 para tentar resolver a maioria dos problemas do flake8
+``` 
+autopep8 --in-place --aggressive --aggressive **/*.py
+```
