@@ -15,6 +15,8 @@ COPY ./src/ .
 
 COPY ./tests/ .
 
+COPY ./tests/data ./tests/data/
+
 COPY ./start.sh .
 
 RUN chmod +x start.sh

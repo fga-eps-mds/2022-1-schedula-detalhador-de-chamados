@@ -29,11 +29,11 @@ models.Base.metadata.create_all(bind=engine)
 def session():
     session = TestingSessionLocal()
 
-    with open("data/insert_categoria.sql", "r") as f:
+    with open("tests/data/insert_categoria.sql", "r") as f:
         session.execute(f.read())
         session.commit()
 
-    with open("data/insert_problem.sql", "r") as f:
+    with open("tests/data/insert_problem.sql", "r") as f:
         session.execute(f.read())
         session.commit()
 
