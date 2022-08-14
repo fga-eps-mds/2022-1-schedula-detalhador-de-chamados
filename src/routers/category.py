@@ -69,7 +69,9 @@ async def get_categories(
 ):
     try:
         if category_id:
-            category = db.query(Category).filter_by(id=category_id).all()
+            category = (
+                db.query(Category).filter_by(id=category_id).one_or_none()
+            )
 
             if category is not None:
                 category = jsonable_encoder(category)

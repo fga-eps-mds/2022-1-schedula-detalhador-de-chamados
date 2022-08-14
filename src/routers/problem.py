@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -142,7 +142,7 @@ async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
             msg = f"Problema de id: {problem_id} deletado com sucesso"
 
         else:
-            msg = (f"Problema de id: {problem_id} não encontrado",)
+            msg = f"Problema de id: {problem_id} não encontrado"
 
         response_data = {"message": msg, "error": None, "data": None}
 
@@ -157,11 +157,11 @@ async def delete_problem(problem_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.put(
-    "/problema/{problem_id}", tags=["Problema"],
-)
+@router.put("/problema/{problem_id}", tags=["Problema"])
 async def put_problem(
-    problem_id: int, data: ProblemModel, db: Session = Depends(get_db)
+    data: ProblemModel,
+    problem_id: int = Path(title="The ID of the item to update"),
+    db: Session = Depends(get_db),
 ):
     try:
         problem = (
@@ -169,12 +169,14 @@ async def put_problem(
         )
         if problem:
             db.commit()
-            problem = db.query(Problem).filter_by(id=problem_id).one_or_none()
-            problem = jsonable_encoder(problem)
+            problem_data = (
+                db.query(Problem).filter_by(id=problem_id).one_or_none()
+            )
+            problem_data = jsonable_encoder(problem)
             response_data = {
                 "message": "Dados atualizados com sucesso",
                 "error": None,
-                "data": problem,
+                "data": problem_data,
             }
 
             return JSONResponse(
@@ -182,11 +184,13 @@ async def put_problem(
             )
 
         else:
-            response_data = {
-                "message": "Problema não encontrado",
-                "error": None,
-                "data": None,
-            }
+            response_data = jsonable_encoder(
+                {
+                    "message": "Problema não encontrado",
+                    "error": None,
+                    "data": None,
+                }
+            )
 
             return JSONResponse(
                 content=response_data, status_code=status.HTTP_200_OK
