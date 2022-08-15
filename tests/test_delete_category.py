@@ -5,7 +5,7 @@ def test_delete_category(client):
         response.json()["message"]
         == "Categoria de id = 10 deletada com sucesso"
     )
-    verify = client.get("/categoria/?category_id=10")
+    verify = client.get("/categoria?category_id=10")
     assert verify.status_code == 200
     assert not verify.json()["data"]["active"]
 

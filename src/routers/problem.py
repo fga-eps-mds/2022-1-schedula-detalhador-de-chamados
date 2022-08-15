@@ -39,7 +39,7 @@ def get_error_response(e: Exception):
     }
 
 
-@router.get("/problema/", tags=["Problema"])
+@router.get("/problema", tags=["Problema"])
 async def get_problems(
     problem_id: Union[int, None] = None,
     db: Session = Depends(get_db),
@@ -97,7 +97,7 @@ async def get_problems(
         )
 
 
-@router.post("/problema/", tags=["Problema"], response_model=ProblemModel)
+@router.post("/problema", tags=["Problema"], response_model=ProblemModel)
 async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
     try:
         problem = Problem(**data.dict())
