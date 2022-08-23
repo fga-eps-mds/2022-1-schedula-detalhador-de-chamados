@@ -172,7 +172,7 @@ async def put_problem(
             problem_data = (
                 db.query(Problem).filter_by(id=problem_id).one_or_none()
             )
-            problem_data = jsonable_encoder(problem)
+            problem_data = jsonable_encoder(problem_data)
             response_data = {
                 "message": "Dados atualizados com sucesso",
                 "error": None,
