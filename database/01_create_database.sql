@@ -47,9 +47,9 @@ CREATE TYPE "public"."status" AS ENUM ('pending', 'in_progress', 'not_solved', '
 CREATE TABLE "public"."has" (
     problem_id INTEGER,
     request_id INTEGER,
-    status "public"."status" NOT NULL DEFAULT 'pending',
+    request_status "public"."status" NOT NULL DEFAULT 'pending',
     event_date TIMESTAMP,
-    event BOOLEAN,
+    is_event BOOLEAN,
     priority "public"."priority" NOT NULL DEFAULT 'normal',
     CONSTRAINT "FK_problem_id" FOREIGN KEY ("problem_id")
         REFERENCES "public"."problem" ("id")
