@@ -28,3 +28,33 @@ CREATE TABLE "public"."problem" (
         ON DELETE RESTRICT
 
 );
+
+CREATE TABLE "public"."request" (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY(start 1),
+    attendant_name VARCHAR(250),
+    applicant_name VARCHAR(250),
+    applicant_phone VARCHAR(20),
+    place VARCHAR(250),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    workstation_id INTEGER,
+    CONSTRAINT "PK_id_request" PRIMARY KEY ("id")
+);
+
+CREATE TYPE "public"."priority" AS ENUM ('low', 'normal', 'hight', 'urgent');
+CREATE TYPE "public"."status" AS ENUM ('pending', 'in_progress', 'not_solved', 'outsourced', 'solved');
+
+CREATE TABLE "public"."has" (
+    problem_id INTEGER,
+    request_id INTEGER,
+    status "public"."status" NOT NULL DEFAULT 'pending',
+    event_date TIMESTAMP,
+    event BOOLEAN,
+    priority "public"."priority" NOT NULL DEFAULT 'normal',
+    CONSTRAINT "FK_problem_id" FOREIGN KEY ("problem_id")
+        REFERENCES "public"."problem" ("id")
+        ON DELETE RESTRICT,
+    CONSTRAINT "FK_request_id" FOREIGN KEY ("request_id")
+        REFERENCES request ("id")
+        ON DELETE SET NULL
+);
