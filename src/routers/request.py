@@ -13,20 +13,6 @@ from models import Base, Request, has
 router = APIRouter()
 
 
-class CategoryModel(BaseModel):
-    name: str
-    description: str
-    active: bool = True
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "Internet",
-                "description": "Problemas relacionados à internet.",
-            }
-        }
-
-
 class hasModel(BaseModel):
     problem_id: int
     is_event: bool = False
@@ -156,11 +142,7 @@ async def get_chamado(
                 )
                 status_code = status.HTTP_200_OK
 
-            response_data = {
-                "message": message,
-                "error": None,
-                "data": query,
-            }
+            response_data = {"message": message, "error": None, "data": query}
 
             return JSONResponse(
                 content=jsonable_encoder(response_data),
@@ -186,29 +168,42 @@ async def get_chamado(
         )
 
 
-# @router.delete("/categoria/{category_id}", tags=["Categoria"])
-# async def delete_category(category_id: int, db: Session = Depends(get_db)):
-#     try:
-#         category = db.query(Category).filter_by(id=category_id).one_or_none()
-#         if category:
-#             category.active = False
-#             db.commit()
-#             message = f"Categoria de id = {category_id} deletada com sucesso"
+@router.delete("/chamado/", tags=["Chamado"])
+async def delete_chamado(
+    request_id: int, problem_id: int, db: Session = Depends(get_db)
+):
+    try:
+        query = (
+            db.query(has)
+            .filter(has.c.request_id == request_id)
+            .filter(has.c.problem_id == problem_id)
+            .update({"request_status": "solved"})
+        )
 
-#         else:
-#             message = f"Categoria de id = {category_id} não encontrada"
+        if query:
+            db.commit()
+            query_data = (
+                db.query(has)
+                .filter(has.c.request_id == request_id)
+                .filter(has.c.problem_id == problem_id)
+                .first()
+            )
+            query_data = jsonable_encoder(query_data)
+            message = "Chamado marcado como resolvido"
+        else:
+            message = "Chamado não encontrado"
 
-#         response_data = {"message": message, "error": None, "data": None}
+        response_data = {"message": message, "error": None, "data": query_data}
 
-#         return JSONResponse(
-#             content=response_data, status_code=status.HTTP_200_OK
-#         )
+        return JSONResponse(
+            content=response_data, status_code=status.HTTP_200_OK
+        )
 
-#     except Exception as e:
-#         return JSONResponse(
-#             content=get_error_response(e),
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#         )
+    except Exception as e:
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 # @router.put("/categoria/{category_id}", tags=["Categoria"])
