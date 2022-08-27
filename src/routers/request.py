@@ -71,7 +71,7 @@ def get_error_response(e: Exception):
     }
 
 
-@router.post("/chamado/", tags=["Chamado"], response_model=RequestModel)
+@router.post("/chamado", tags=["Chamado"], response_model=RequestModel)
 async def post_request(data: RequestModel, db: Session = Depends(get_db)):
     try:
         data_dict = data.dict()
@@ -119,7 +119,7 @@ def get_has_data(query, db: Session):
     return final_list
 
 
-@router.get("/chamado/", tags=["Chamado"])
+@router.get("/chamado", tags=["Chamado"])
 async def get_chamado(
     problem_id: Union[int, None] = None, db: Session = Depends(get_db)
 ):
@@ -168,7 +168,7 @@ async def get_chamado(
         )
 
 
-@router.delete("/chamado/", tags=["Chamado"])
+@router.delete("/chamado", tags=["Chamado"])
 async def delete_chamado(
     request_id: int, problem_id: int, db: Session = Depends(get_db)
 ):

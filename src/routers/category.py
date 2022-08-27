@@ -37,7 +37,7 @@ def get_error_response(e: Exception):
     }
 
 
-@router.post("/categoria/", tags=["Categoria"], response_model=CategoryModel)
+@router.post("/categoria", tags=["Categoria"], response_model=CategoryModel)
 async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
     try:
         new_object = Category(**data.dict())
@@ -63,7 +63,7 @@ async def post_category(data: CategoryModel, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/categoria/", tags=["Categoria"])
+@router.get("/categoria", tags=["Categoria"])
 async def get_categories(
     category_id: Union[int, None] = None, db: Session = Depends(get_db)
 ):
