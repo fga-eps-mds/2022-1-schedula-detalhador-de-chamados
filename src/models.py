@@ -35,10 +35,13 @@ has = Table(
     Base.metadata,
     Column("problem_id", Integer, ForeignKey("problem.id")),
     Column("request_id", Integer, ForeignKey("request.id")),
-    Column("event", Boolean, nullable=True),
+    Column("is_event", Boolean, nullable=True),
     Column("event_date", TIMESTAMP, nullable=True),
     Column(
-        "status", Enum(EnumStatus), default=EnumStatus.pending, nullable=False
+        "request_status",
+        Enum(EnumStatus),
+        default=EnumStatus.pending,
+        nullable=False,
     ),
     Column(
         "priority",
