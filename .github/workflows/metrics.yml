@@ -1,8 +1,7 @@
 name: Generate Metrics Release
 
 on:
-  pull_request:
-    types: [synchronize]
+  push:
     branches: 
       - main
       - develop
