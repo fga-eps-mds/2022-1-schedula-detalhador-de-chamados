@@ -22,6 +22,7 @@ class UpdateHasModel(BaseModel):
 
 
 class UpdateRequestModel(BaseModel):
+    attendant_name: str | None = None
     applicant_name: str = None
     applicant_phone: str = None
     place: str = None
@@ -182,9 +183,7 @@ async def get_chamado(
                 message = "Dados buscados com sucesso"
                 status_code = status.HTTP_200_OK
             else:
-                message = (
-                    "Nenhuma chamado com esse tipo de problema encontrado"
-                )
+                message = "Nenhum chamado com esse tipo de problema encontrado"
                 status_code = status.HTTP_200_OK
 
             response_data = {"message": message, "error": None, "data": query}
@@ -237,6 +236,7 @@ async def delete_chamado(
             message = "Chamado marcado como resolvido"
         else:
             message = "Chamado não encontrado"
+            query_data = None
 
         response_data = {"message": message, "error": None, "data": query_data}
 
@@ -255,6 +255,16 @@ async def delete_chamado(
 async def update_chamado(
     data: UpdateRequestModel, request_id: int, db: Session = Depends(get_db)
 ):
+    if data.attendant_name:
+        return JSONResponse(
+            content={
+                "message": "Não é possível alterar o nome do atendente",
+                "error": None,
+                "data": None,
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
         data_dict = data.dict(exclude_none=True)
         problems = data_dict.pop("problems")
