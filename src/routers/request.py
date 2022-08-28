@@ -1,16 +1,61 @@
-from typing import Union, List
+from typing import List, Union
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from sqlalchemy import insert
+from sqlalchemy.orm import Session
 
 from database import engine, get_db
 from models import Base, Request, has
 
 router = APIRouter()
+
+
+class UpdateHasModel(BaseModel):
+    problem_id: int
+    is_event: bool = False
+    event_date: str | None = None
+    request_status: str | None = "pending"
+    priority: str | None = "normal"
+
+
+class UpdateRequestModel(BaseModel):
+    applicant_name: str = None
+    applicant_phone: str = None
+    place: str = None
+    description: str | None = None
+    created_at: str | None = None
+    workstation_id: int = None
+    problems: List[UpdateHasModel]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "applicant_name": "Fulano de Tal",
+                "applicant_phone": "999999999",
+                "place": "Sala de Testes",
+                "description": "Ta tudo dando errado nos testes.",
+                "workstation_id": 2,
+                "problems": [
+                    {
+                        "problem_id": 1,
+                        "is_event": False,
+                        "event_date": None,
+                        "request_status": "pending",
+                        "priority": "hight",
+                    },
+                    {
+                        "problem_id": 2,
+                        "is_event": True,
+                        "event_date": "2020-01-01T00:00:00",
+                        "request_status": "pending",
+                        "priority": "urgent",
+                    },
+                ],
+            }
+        }
 
 
 class hasModel(BaseModel):
@@ -206,46 +251,41 @@ async def delete_chamado(
         )
 
 
-# @router.put("/categoria/{category_id}", tags=["Categoria"])
-# async def update_category(
-#     data: CategoryModel,
-#     category_id: int = Path(title="The ID of the item to update"),
-#     db: Session = Depends(get_db),
-# ):
-#     try:
-#         category = (
-#             db.query(Category).filter_by(id=category_id).update(data.dict())
-#         )
-#         if category:
-#             db.commit()
-#             category_data = db.query(Category).filter_by(id=category_id).one()
-#             category_data = jsonable_encoder(category_data)
-#             # data = jsonable_encoder(category)
-#             response_data = jsonable_encoder(
-#                 {
-#                     "message": "Dado atualizado com sucesso",
-#                     "error": None,
-#                     "data": category_data,
-#                 }
-#             )
+@router.put("/chamado/{request_id}", tags=["Chamado"])
+async def update_chamado(
+    data: UpdateRequestModel, request_id: int, db: Session = Depends(get_db)
+):
+    try:
+        data_dict = data.dict(exclude_none=True)
+        problems = data_dict.pop("problems")
+        to_update = (
+            db.query(Request)
+            .filter(Request.id == request_id)
+            .update(data_dict)
+        )
+        if to_update:
+            db.commit()
+            for problem in problems:
+                problem["request_id"] = request_id
+                db.query(has).filter(has.c.request_id == request_id).filter(
+                    has.c.problem_id == problem["problem_id"]
+                ).update(problem)
+            db.commit()
+            query = db.query(Request).filter(Request.id == request_id).all()
+            final_list = get_has_data(query, db)
+            query = jsonable_encoder(final_list)
+            message = "Dados atualizados com sucesso"
+            status_code = status.HTTP_200_OK
 
-#             return JSONResponse(
-#                 content=response_data, status_code=status.HTTP_200_OK
-#             )
-#         else:
-#             response_data = jsonable_encoder(
-#                 {
-#                     "message": "Categoria não encontrada",
-#                     "error": None,
-#                     "data": None,
-#                 }
-#             )
-
-#             return JSONResponse(
-#                 content=response_data, status_code=status.HTTP_200_OK
-#             )
-#     except Exception as e:
-#         return JSONResponse(
-#             content=get_error_response(e),
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#         )
+            response_data = {"message": message, "error": None, "data": query}
+        else:
+            message = "Chamado não encontrado"
+            status_code = status.HTTP_200_OK
+        return JSONResponse(
+            content=jsonable_encoder(response_data), status_code=status_code
+        )
+    except Exception as e:
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
