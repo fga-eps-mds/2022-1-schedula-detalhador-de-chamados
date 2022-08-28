@@ -49,7 +49,7 @@ CREATE TABLE "public"."has" (
     request_id INTEGER,
     request_status "public"."status" NOT NULL DEFAULT 'pending',
     event_date TIMESTAMP,
-    is_event BOOLEAN,
+    is_event BOOLEAN NOT NULL DEFAULT FALSE,
     priority "public"."priority" NOT NULL DEFAULT 'normal',
     CONSTRAINT "FK_problem_id" FOREIGN KEY ("problem_id")
         REFERENCES "public"."problem" ("id")

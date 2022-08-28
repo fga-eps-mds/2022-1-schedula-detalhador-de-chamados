@@ -1,5 +1,5 @@
 def test_get_problem(client):
-    url = "/problema/"
+    url = "/problema"
     response = client.get(url)
     assert response.status_code == 200
     # assert response.json() == {
@@ -91,12 +91,12 @@ def test_get_problem(client):
 
 
 def test_get_problemid(client):
-    url = "/problema/?id=1"
+    url = "/problema?id=1"
     response = client.get(url)
     assert response.status_code == 200
 
 
 def test_get_problemcategoryid(client):
-    url = "/problema/?category_id=1"
+    url = "/problema?category_id=1"
     response = client.get(url)
     assert response.status_code == 200

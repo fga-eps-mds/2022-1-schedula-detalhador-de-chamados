@@ -1,17 +1,10 @@
 import enum
-from sqlalchemy import (
-    TIMESTAMP,
-    Boolean,
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    Table,
-    Enum,
-)
-from sqlalchemy.sql import func
+
+from sqlalchemy import (TIMESTAMP, Boolean, Column, Enum, ForeignKey, Integer,
+                        String, Table, Text)
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from database import Base
 
 
