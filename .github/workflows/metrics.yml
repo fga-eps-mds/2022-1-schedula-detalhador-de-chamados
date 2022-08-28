@@ -2,7 +2,7 @@ name: Generate Metrics Release
 
 on:
   pull_request_review:
-    types: [submitted]
+    types: [submitted, assigned]
     branches: 
       - main
       - develop
@@ -13,9 +13,11 @@ jobs:
   send-metrics:
     runs-on: ubuntu-latest
     steps:
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 1.0.0 # Optional fallback tag to use when no tag can be found
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,7 +28,7 @@ jobs:
           python-version: "3.10"
 
       - name: Create Metrics SonarCloud
-        run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ steps.get_version.VERSION }}
+        run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ steps.previoustag.output.tag }}
 
       - name: Commit Metrics SonarCloud File
         run: |
