@@ -30,6 +30,7 @@ jobs:
       - name: Create Metrics SonarCloud
         run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ steps.previoustag.output.tag }}
 
+
       - name: Commit Metrics SonarCloud File
         run: |
           git config --global user.email "${{ secrets.USER_EMAIL }}"
