@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List, Union
 
 from fastapi import APIRouter, Depends, status
@@ -14,8 +15,8 @@ router = APIRouter()
 
 
 class UpdateHasModel(BaseModel):
-    problem_id: int
-    is_event: bool = False
+    problem_id: int | None = None
+    is_event: bool | None = False
     event_date: str | None = None
     request_status: str | None = "pending"
     priority: str | None = "normal"
@@ -23,13 +24,13 @@ class UpdateHasModel(BaseModel):
 
 class UpdateRequestModel(BaseModel):
     attendant_name: str | None = None
-    applicant_name: str = None
-    applicant_phone: str = None
-    place: str = None
+    applicant_name: str | None = None
+    applicant_phone: str | None = None
+    place: str | None = None
     description: str | None = None
     created_at: str | None = None
-    workstation_id: int = None
-    problems: List[UpdateHasModel]
+    workstation_id: int | None = None
+    problems: List[UpdateHasModel] | None = None
 
     class Config:
         schema_extra = {
@@ -163,6 +164,61 @@ def get_has_data(query, db: Session):
         request_dict["problems"] = requests
         final_list.append(request_dict)
     return final_list
+
+
+@router.get("/evento", tags=["Evento"])
+async def get_event(
+    days_to_event: Union[int, None] = None, db: Session = Depends(get_db)
+):
+    try:
+        if days_to_event:
+            query = (
+                db.query(has)
+                .filter(
+                    has.c.is_event is True,
+                    has.c.event_date >= datetime.now(),
+                    has.c.event_date
+                    <= datetime.today() + timedelta(days=days_to_event),
+                )
+                .all()
+            )
+        else:
+            query = (
+                db.query(has)
+                .filter(
+                    has.c.is_event is True,
+                    has.c.event_date >= datetime.today(),
+                )
+                .all()
+            )
+        final_list = []
+        for event in query:
+            event_dict = jsonable_encoder(event)
+            request = (
+                db.query(Request)
+                .filter(Request.id == event_dict["request_id"])
+                .first()
+            )
+            request_dict = jsonable_encoder(request)
+            request_dict["problems"] = event_dict
+            final_list.append(request_dict)
+
+        response_data = jsonable_encoder(
+            {
+                "message": "Dados recuperados com sucesso",
+                "error": None,
+                "data": final_list,
+            }
+        )
+
+        return JSONResponse(
+            content=response_data, status_code=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return JSONResponse(
+            content=get_error_response(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/chamado", tags=["Chamado"])
