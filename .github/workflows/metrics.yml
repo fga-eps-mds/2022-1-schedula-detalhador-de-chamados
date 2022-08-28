@@ -13,6 +13,10 @@ jobs:
   send-metrics:
     runs-on: ubuntu-latest
     steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -22,7 +26,7 @@ jobs:
           python-version: "3.10"
 
       - name: Create Metrics SonarCloud
-        run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ github.ref_name }}
+        run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ steps.get_version.VERSION }}
 
       - name: Commit Metrics SonarCloud File
         run: |
