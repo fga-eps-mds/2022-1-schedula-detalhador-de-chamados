@@ -26,7 +26,7 @@ jobs:
           python-version: "3.10"
 
       - name: Create Metrics SonarCloud
-        run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ steps.get_version.VERSION }}
+        run: python metrics/sonar-metrics.py ${{ github.event.repository.name }} ${{ steps.get_version.SOURCE_TAG }}
 
       - name: Commit Metrics SonarCloud File
         run: |
