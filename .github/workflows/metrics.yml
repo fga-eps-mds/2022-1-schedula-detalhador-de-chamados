@@ -1,8 +1,13 @@
 name: Generate Metrics Release
 
 on:
+  pull_request:
+    types: [assigned]
+    branches: 
+      - main
+      - develop
   pull_request_review:
-    types: [submitted, assigned]
+    types: [submitted]
     branches: 
       - main
       - develop
