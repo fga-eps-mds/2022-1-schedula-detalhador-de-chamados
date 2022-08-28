@@ -35,10 +35,10 @@ jobs:
         run: docker-compose up -d
 
       - name: Run isort
-        run: docker-compose run gestor-de-usuarios bash -c "isort *.py --diff"
+        run: docker-compose run detalhador-de-chamados bash -c "isort *.py --diff"
 
       - name: Run Flake8
-        run: docker-compose run gestor-de-usuarios bash -c "flake8"
+        run: docker-compose run detalhador-de-chamados bash -c "flake8"
 
   tests:
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
         run: docker-compose up -d
 
       - name: Run tests
-        run: docker-compose run gestor-de-usuarios bash -c "pytest -vv --cov"
+        run: docker-compose run detalhador-de-chamados bash -c "pytest -vv --cov"
 
   sonarcloud:
     name: SonarCloud
@@ -101,4 +101,4 @@ jobs:
         with:
           context: "{{defaultContext}}"
           push: true
-          tags: bigode73/gestor-de-usuarios:latest
+          tags: bigode73/detalhador-de-chamados:latest
