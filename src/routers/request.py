@@ -181,7 +181,7 @@ async def get_event(
             query = (
                 db.query(has)
                 .filter(
-                    has.c.is_event is True,
+                    has.c.is_event,
                     has.c.event_date >= datetime.now(),
                     has.c.event_date
                     <= datetime.today() + timedelta(days=days_to_event),
@@ -191,10 +191,7 @@ async def get_event(
         else:
             query = (
                 db.query(has)
-                .filter(
-                    has.c.is_event is True,
-                    has.c.event_date >= datetime.today(),
-                )
+                .filter(has.c.is_event, has.c.event_date >= datetime.today())
                 .all()
             )
         final_list = []
