@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Union
+from unicodedata import category
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
@@ -9,7 +10,7 @@ from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
-from models import Base, Request, has
+from models import Base, Category, Problem, Request, has
 
 router = APIRouter()
 
@@ -167,7 +168,22 @@ def get_has_data(query, db: Session):
         requests = (
             db.query(has).filter(has.c.request_id == request_dict["id"]).all()
         )
-        request_dict["problems"] = requests
+        lista = []
+        for problem in requests:
+            problem_data = (
+                db.query(Problem).filter_by(id=problem.problem_id).first()
+            )
+            category_data = (
+                db.query(Category).filter_by(id=problem.category_id).first()
+            )
+            problem_dict = jsonable_encoder(problem_data)
+            category_dict = jsonable_encoder(category_data)
+            tmp_dict = jsonable_encoder(problem)
+            tmp_dict["problem"] = problem_dict
+            tmp_dict["category"] = category_dict
+            lista.append(tmp_dict)
+        request_dict["problems"] = lista
+        # request_dict["problems"] = requests
         final_list.append(request_dict)
     return final_list
 
