@@ -41,7 +41,7 @@ CREATE TABLE "public"."request" (
     CONSTRAINT "PK_id_request" PRIMARY KEY ("id")
 );
 
-CREATE TYPE "public"."priority" AS ENUM ('low', 'normal', 'hight', 'urgent');
+CREATE TYPE "public"."priority" AS ENUM ('low', 'normal', 'high', 'urgent');
 CREATE TYPE "public"."status" AS ENUM ('pending', 'in_progress', 'not_solved', 'outsourced', 'solved');
 
 CREATE TABLE "public"."has" (
