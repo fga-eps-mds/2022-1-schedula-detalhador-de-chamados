@@ -28,6 +28,7 @@ has = Table(
     Base.metadata,
     Column("problem_id", Integer, ForeignKey("problem.id")),
     Column("request_id", Integer, ForeignKey("request.id")),
+    Column("category_id", Integer, nullable=False),
     Column("is_event", Boolean, nullable=True),
     Column("event_date", TIMESTAMP, nullable=True),
     Column(
