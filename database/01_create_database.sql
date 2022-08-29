@@ -31,8 +31,8 @@ CREATE TABLE "public"."problem" (
 
 CREATE TABLE "public"."request" (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY(start 1),
-    attendant_name VARCHAR(250),
-    applicant_name VARCHAR(250),
+    attendant_name VARCHAR(250) NOT NULL,
+    applicant_name VARCHAR(250) NOT NULL,
     applicant_phone VARCHAR(20),
     place VARCHAR(250),
     description TEXT,
@@ -45,8 +45,8 @@ CREATE TYPE "public"."priority" AS ENUM ('low', 'normal', 'hight', 'urgent');
 CREATE TYPE "public"."status" AS ENUM ('pending', 'in_progress', 'not_solved', 'outsourced', 'solved');
 
 CREATE TABLE "public"."has" (
-    problem_id INTEGER,
-    request_id INTEGER,
+    problem_id INTEGER NOT NULL,
+    request_id INTEGER NOT NULL,
     request_status "public"."status" NOT NULL DEFAULT 'pending',
     event_date TIMESTAMP,
     is_event BOOLEAN NOT NULL DEFAULT FALSE,
