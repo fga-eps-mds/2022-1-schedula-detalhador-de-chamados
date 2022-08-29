@@ -62,7 +62,7 @@ class Problem(Base):
     __tablename__ = "problem"
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
-    description = Column(String(250), nullable=False)
+    description = Column(String(250), nullable=True)
     active = Column(Boolean, nullable=False, default=True)
     updated_at = Column(
         TIMESTAMP,
@@ -80,8 +80,8 @@ class Request(Base):
     id = Column(Integer, primary_key=True)
     attendant_name = Column(String(250), nullable=False)
     applicant_name = Column(String(250), nullable=False)
-    applicant_phone = Column(String(20), nullable=False)
-    place = Column(String(250), nullable=False)
+    applicant_phone = Column(String(20), nullable=True)
+    place = Column(String(250), nullable=True)
     description = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     workstation_id = Column(Integer, nullable=False)
