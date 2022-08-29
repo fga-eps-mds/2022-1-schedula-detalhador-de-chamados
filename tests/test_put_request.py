@@ -9,12 +9,14 @@ def test_put_request(client):
             "workstation_id": 2,
             "problems": [
                 {
+                    "category_id": 1,
                     "problem_id": 1,
                     "is_event": False,
                     "request_status": "pending",
                     "priority": "high",
                 },
                 {
+                    "category_id": 1,
                     "problem_id": 2,
                     "is_event": False,
                     "request_status": "pending",
@@ -40,12 +42,14 @@ def test_put_request_attendant_name(client):
             "workstation_id": 2,
             "problems": [
                 {
+                    "category_id": 1,
                     "problem_id": 1,
                     "is_event": False,
                     "request_status": "pending",
                     "priority": "high",
                 },
                 {
+                    "category_id": 1,
                     "problem_id": 2,
                     "is_event": False,
                     "request_status": "pending",
@@ -54,4 +58,4 @@ def test_put_request_attendant_name(client):
             ],
         },
     )
-    assert response.status_code == 400
+    assert response.status_code == 200

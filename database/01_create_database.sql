@@ -45,6 +45,7 @@ CREATE TYPE "public"."priority" AS ENUM ('low', 'normal', 'high', 'urgent');
 CREATE TYPE "public"."status" AS ENUM ('pending', 'in_progress', 'not_solved', 'outsourced', 'solved');
 
 CREATE TABLE "public"."has" (
+    category_id INTEGER NOT NULL,
     problem_id INTEGER NOT NULL,
     request_id INTEGER NOT NULL,
     request_status "public"."status" NOT NULL DEFAULT 'pending',

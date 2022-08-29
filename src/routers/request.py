@@ -16,6 +16,7 @@ router = APIRouter()
 
 class UpdateHasModel(BaseModel):
     problem_id: int | None = None
+    category_id: int | None = None
     is_event: bool | None = False
     event_date: str | None = None
     request_status: str | None = "pending"
@@ -42,6 +43,7 @@ class UpdateRequestModel(BaseModel):
                 "workstation_id": 2,
                 "problems": [
                     {
+                        "category_id": 1,
                         "problem_id": 1,
                         "is_event": False,
                         "event_date": None,
@@ -49,6 +51,7 @@ class UpdateRequestModel(BaseModel):
                         "priority": "high",
                     },
                     {
+                        "category_id": 1,
                         "problem_id": 2,
                         "is_event": True,
                         "event_date": "2020-01-01T00:00:00",
@@ -62,6 +65,7 @@ class UpdateRequestModel(BaseModel):
 
 class hasModel(BaseModel):
     problem_id: int
+    category_id: int
     is_event: bool = False
     event_date: str | None = None
     request_status: str = "pending"
@@ -89,6 +93,7 @@ class RequestModel(BaseModel):
                 "workstation_id": 1,
                 "problems": [
                     {
+                        "category_id": 1,
                         "problem_id": 1,
                         "is_event": False,
                         "event_date": None,
@@ -96,6 +101,7 @@ class RequestModel(BaseModel):
                         "priority": "normal",
                     },
                     {
+                        "category_id": 1,
                         "problem_id": 2,
                         "is_event": True,
                         "event_date": "2020-01-01T00:00:00",
@@ -311,18 +317,11 @@ async def delete_chamado(
 async def update_chamado(
     data: UpdateRequestModel, request_id: int, db: Session = Depends(get_db)
 ):
-    if data.attendant_name:
-        return JSONResponse(
-            content={
-                "message": "Não é possível alterar o nome do atendente",
-                "error": None,
-                "data": None,
-            },
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
     try:
         data_dict = data.dict(exclude_none=True)
+        if data.attendant_name:
+            data_dict.pop("attendant_name")
+
         problems = data_dict.pop("problems")
         to_update = (
             db.query(Request)
