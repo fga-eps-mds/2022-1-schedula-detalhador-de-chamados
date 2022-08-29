@@ -46,7 +46,7 @@ class UpdateRequestModel(BaseModel):
                         "is_event": False,
                         "event_date": None,
                         "request_status": "pending",
-                        "priority": "hight",
+                        "priority": "high",
                     },
                     {
                         "problem_id": 2,

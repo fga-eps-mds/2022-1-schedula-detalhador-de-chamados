@@ -19,7 +19,7 @@ class EnumStatus(str, enum.Enum):
 class EnumPriority(str, enum.Enum):
     low = "low"
     normal = "normal"
-    hight = "hight"
+    high = "high"
     urgent = "urgent"
 
 

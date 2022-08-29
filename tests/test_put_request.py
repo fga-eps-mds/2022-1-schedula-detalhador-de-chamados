@@ -12,7 +12,7 @@ def test_put_request(client):
                     "problem_id": 1,
                     "is_event": False,
                     "request_status": "pending",
-                    "priority": "hight",
+                    "priority": "high",
                 },
                 {
                     "problem_id": 2,
@@ -43,7 +43,7 @@ def test_put_request_attendant_name(client):
                     "problem_id": 1,
                     "is_event": False,
                     "request_status": "pending",
-                    "priority": "hight",
+                    "priority": "high",
                 },
                 {
                     "problem_id": 2,

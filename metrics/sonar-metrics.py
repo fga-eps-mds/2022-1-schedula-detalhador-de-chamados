@@ -1,6 +1,8 @@
-from datetime import datetime
+import json
 import sys
-import urllib.request, json
+import urllib.request
+from datetime import datetime
+
 
 def generate_metrics():
   base_url = "https://sonarcloud.io/api/measures/component_tree?component=fga-eps-mds_"
