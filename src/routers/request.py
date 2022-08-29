@@ -230,39 +230,44 @@ async def get_chamado(
 ):
     try:
         if problem_id:
-            query = (
-                db.query(Request)
-                .filter(Request.problems.any(id=problem_id))
-                .all()
-            )
-
-            if query:
-                final_list = get_has_data(query, db)
-                query = jsonable_encoder(final_list)
-                message = "Dados buscados com sucesso"
-                status_code = status.HTTP_200_OK
-            else:
-                message = "Nenhum chamado com esse tipo de problema encontrado"
-                status_code = status.HTTP_200_OK
-
-            response_data = {"message": message, "error": None, "data": query}
-
-            return JSONResponse(
-                content=jsonable_encoder(response_data),
-                status_code=status_code,
-            )
+            query = db.query(has).filter(has.c.problem_id == problem_id).all()
+            final_list = []
+            for event in query:
+                event_dict = jsonable_encoder(event)
+                request = (
+                    db.query(Request)
+                    .filter(Request.id == event_dict["request_id"])
+                    .first()
+                )
+                request_dict = jsonable_encoder(request)
+                request_dict["problems"] = event_dict
+                final_list.append(request_dict)
         else:
-            query = db.query(Request).all()
-            all_data = get_has_data(query, db)
-            all_data = jsonable_encoder(all_data)
-            response_data = {
-                "message": "Dados buscados com sucesso",
-                "error": None,
-                "data": all_data,
-            }
-            return JSONResponse(
-                content=dict(response_data), status_code=status.HTTP_200_OK
+            query = (
+                db.query(has).filter(has.c.request_status != "solved").all()
             )
+            final_list = []
+            for event in query:
+                event_dict = jsonable_encoder(event)
+                request = (
+                    db.query(Request)
+                    .filter(Request.id == event_dict["request_id"])
+                    .first()
+                )
+                request_dict = jsonable_encoder(request)
+                request_dict["problems"] = event_dict
+                final_list.append(request_dict)
+        response_data = jsonable_encoder(
+            {
+                "message": "Dados recuperados com sucesso",
+                "error": None,
+                "data": final_list,
+            }
+        )
+
+        return JSONResponse(
+            content=response_data, status_code=status.HTTP_200_OK
+        )
 
     except Exception as e:
         return JSONResponse(
