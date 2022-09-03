@@ -1,7 +1,7 @@
 import enum
 
-from sqlalchemy import (TIMESTAMP, Boolean, Column, Enum, ForeignKey, Integer,
-                        String, Table, Text)
+from sqlalchemy import (DATE, TIMESTAMP, Boolean, Column, Enum, ForeignKey,
+                        Integer, String, Table, Text)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -23,14 +23,24 @@ class EnumPriority(str, enum.Enum):
     urgent = "urgent"
 
 
+alert_date = Table(
+    "alert_date",
+    Base.metadata,
+    Column("has_id", Integer, ForeignKey("has.id")),
+    Column("alert_date", DATE, nullable=False),
+)
+
+
 has = Table(
     "has",
     Base.metadata,
+    Column("id", Integer, primary_key=True),
     Column("problem_id", Integer, ForeignKey("problem.id")),
     Column("request_id", Integer, ForeignKey("request.id")),
     Column("category_id", Integer, nullable=False),
     Column("is_event", Boolean, nullable=True),
     Column("event_date", TIMESTAMP, nullable=True),
+    Column("description", Text, nullable=True),
     Column(
         "request_status",
         Enum(EnumStatus),
@@ -42,6 +52,9 @@ has = Table(
         Enum(EnumPriority),
         default=EnumPriority.normal,
         nullable=False,
+    ),
+    alert_dates=relationship(
+        "alert_date", secondary=alert_date, backref="has"
     ),
 )
 
@@ -81,11 +94,10 @@ class Request(Base):
     id = Column(Integer, primary_key=True)
     attendant_name = Column(String(250), nullable=False)
     applicant_name = Column(String(250), nullable=False)
-    applicant_phone = Column(String(20), nullable=True)
-    place = Column(String(250), nullable=True)
-    description = Column(Text, nullable=True)
-    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+    applicant_phone = Column(String(20), nullable=False)
+    place_id = Column(Integer, nullable=True)
     workstation_id = Column(Integer, nullable=False)
+    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     problems = relationship(
         "Problem", secondary=has, back_populates="requests"
     )

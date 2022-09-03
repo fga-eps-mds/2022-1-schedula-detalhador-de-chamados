@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from typing import List, Union
-from unicodedata import category
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
@@ -178,10 +177,12 @@ def get_has_data(query, db: Session):
             )
             problem_dict = jsonable_encoder(problem_data)
             category_dict = jsonable_encoder(category_data)
+
             tmp_dict = jsonable_encoder(problem)
             tmp_dict["problem"] = problem_dict
             tmp_dict["category"] = category_dict
             lista.append(tmp_dict)
+
         request_dict["problems"] = lista
         # request_dict["problems"] = requests
         final_list.append(request_dict)
