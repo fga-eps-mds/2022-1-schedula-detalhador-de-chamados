@@ -53,9 +53,6 @@ has = Table(
         default=EnumPriority.normal,
         nullable=False,
     ),
-    alert_dates=relationship(
-        "alert_date", secondary=alert_date, backref="has"
-    ),
 )
 
 
@@ -95,7 +92,7 @@ class Request(Base):
     attendant_name = Column(String(250), nullable=False)
     applicant_name = Column(String(250), nullable=False)
     applicant_phone = Column(String(20), nullable=False)
-    place_id = Column(Integer, nullable=True)
+    city_id = Column(Integer, nullable=False)
     workstation_id = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     problems = relationship(

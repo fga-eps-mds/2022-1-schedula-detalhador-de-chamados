@@ -34,9 +34,9 @@ CREATE TABLE "public"."request" (
     attendant_name VARCHAR(250) NOT NULL,
     applicant_name VARCHAR(250) NOT NULL,
     applicant_phone VARCHAR(20) NOT NULL,
-    place_id VARCHAR(250),
+    city_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    workstation_id INTEGER,
+    workstation_id INTEGER NOT NULL,
     CONSTRAINT "PK_id_request" PRIMARY KEY ("id")
 );
 

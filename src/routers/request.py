@@ -9,7 +9,7 @@ from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
-from models import Base, Category, Problem, Request, has
+from models import Base, Category, Problem, Request, alert_date, has
 
 router = APIRouter()
 
@@ -70,14 +70,15 @@ class hasModel(BaseModel):
     event_date: str | None = None
     request_status: str = "pending"
     priority: str = "normal"
+    alert_dates: List[str] | None = None
+    description: str | None = None
 
 
 class RequestModel(BaseModel):
     attendant_name: str
     applicant_name: str
     applicant_phone: str
-    place: str
-    description: str | None = None
+    city_id: int
     created_at: str | None = None
     workstation_id: int
     problems: List[hasModel]
@@ -88,8 +89,7 @@ class RequestModel(BaseModel):
                 "attendant_name": "Fulano",
                 "applicant_name": "Ciclano",
                 "applicant_phone": "1111111111",
-                "place": "Sala de Reuniões",
-                "description": "Chamado aberto para acesso a internet.",
+                "city_id": 1,
                 "workstation_id": 1,
                 "problems": [
                     {
@@ -98,15 +98,22 @@ class RequestModel(BaseModel):
                         "is_event": False,
                         "event_date": None,
                         "request_status": "pending",
+                        "description": "Chamado sobre acesso a internet.",
                         "priority": "normal",
+                        "alert_dates": None,
                     },
                     {
                         "category_id": 1,
                         "problem_id": 2,
                         "is_event": True,
-                        "event_date": "2020-01-01T00:00:00",
+                        "event_date": "2020-02-01T00:00:00",
+                        "description": "Chamado sobre acesso a internet.",
                         "request_status": "pending",
                         "priority": "normal",
+                        "alert_dates": [
+                            "2020-01-01T00:00:00",
+                            "2020-01-02T00:00:00",
+                        ],
                     },
                 ],
             }
@@ -135,10 +142,23 @@ async def post_request(data: RequestModel, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_object)
         new_object = jsonable_encoder(new_object)
-
         for problem in problems:
             problem["request_id"] = new_object["id"]
-            db.execute(insert(has).values(**problem))
+
+            alerts = problem.pop("alert_dates")
+
+            result = db.execute(insert(has).values(**problem))
+
+            if alerts:
+                for alert in alerts:
+                    db.execute(
+                        insert(alert_date).values(
+                            **{
+                                "alert_date": alert,
+                                "has_id": result.inserted_primary_key[0],
+                            }
+                        )
+                    )
 
         db.commit()
 
@@ -175,16 +195,26 @@ def get_has_data(query, db: Session):
             category_data = (
                 db.query(Category).filter_by(id=problem.category_id).first()
             )
+            alert_dates = (
+                db.query(alert_date)
+                .filter(alert_date.c.has_id == problem.id)
+                .all()
+            )
+
+            alerts_dict = jsonable_encoder(alert_dates)
             problem_dict = jsonable_encoder(problem_data)
             category_dict = jsonable_encoder(category_data)
 
             tmp_dict = jsonable_encoder(problem)
             tmp_dict["problem"] = problem_dict
             tmp_dict["category"] = category_dict
+            tmp_dict["alert_dates"] = [
+                date["alert_date"] for date in alerts_dict
+            ]
             lista.append(tmp_dict)
 
         request_dict["problems"] = lista
-        # request_dict["problems"] = requests
+
         final_list.append(request_dict)
     return final_list
 
