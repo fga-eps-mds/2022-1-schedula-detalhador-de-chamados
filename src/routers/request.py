@@ -249,9 +249,12 @@ async def get_event(
         else:
             query = (
                 db.query(has)
-                .filter(has.c.is_event, has.c.event_date >= datetime.today())
+                .join(alert_date)
+                .filter(alert_date.c.alert_date == datetime.today().date())
                 .all()
             )
+            print(f"QUERY = {query}")
+
         final_list = []
         for event in query:
             event_dict = jsonable_encoder(event)
@@ -392,7 +395,6 @@ async def update_chamado(
 
                     alerts = problem.pop("alert_dates")
                     problem["request_id"] = request_id
-                    print(f" problem = {problem}")
 
                     has_updated = (
                         db.query(has)
