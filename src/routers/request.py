@@ -1,3 +1,5 @@
+import os
+import requests as r
 from datetime import datetime, timedelta
 from typing import List, Union
 
@@ -24,6 +26,9 @@ class UpdateHasModel(BaseModel):
     priority: str | None = "normal"
     alert_dates: List[str] | None = None
     description: str | None = None
+
+
+GERENCIADOR_DE_LOCALIDADES = os.getenv("GERENCIADOR_DE_LOCALIDADES")
 
 
 class UpdateRequestModel(BaseModel):
@@ -225,6 +230,24 @@ def get_has_data(query, db: Session):
             lista.append(tmp_dict)
 
         request_dict["problems"] = lista
+
+        response = r.get(
+            "http://"
+            + GERENCIADOR_DE_LOCALIDADES
+            + f"/city?city_id={request_dict['city_id']}"
+        )
+
+        if response.status_code == 200:
+            request_dict["city"] = response.json()["data"][0]
+
+        response = r.get(
+            "http://"
+            + GERENCIADOR_DE_LOCALIDADES
+            + f"/workstation?id={request_dict['workstation_id']}"
+        )
+
+        if response.status_code == 200:
+            request_dict["workstation"] = response.json()["data"][0]
 
         final_list.append(request_dict)
     return final_list
