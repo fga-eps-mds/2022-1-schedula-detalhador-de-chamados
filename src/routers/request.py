@@ -28,7 +28,7 @@ class UpdateHasModel(BaseModel):
     description: str | None = None
 
 
-GERENCIADOR_DE_LOCALIDADES = os.getenv("GERENCIADOR_DE_LOCALIDADES")
+GERENCIADOR_DE_LOCALIDADES_URL = os.getenv("GERENCIADOR_DE_LOCALIDADES_URL")
 
 
 class UpdateRequestModel(BaseModel):
@@ -232,22 +232,20 @@ def get_has_data(query, db: Session):
         request_dict["problems"] = lista
 
         response = r.get(
-            "http://"
-            + GERENCIADOR_DE_LOCALIDADES
+            GERENCIADOR_DE_LOCALIDADES_URL
             + f"/city?city_id={request_dict['city_id']}"
         )
 
         if response.status_code == 200:
-            request_dict["city"] = response.json()["data"][0]
+            request_dict["city"] = response.json()["data"]
 
         response = r.get(
-            "http://"
-            + GERENCIADOR_DE_LOCALIDADES
+            GERENCIADOR_DE_LOCALIDADES_URL
             + f"/workstation?id={request_dict['workstation_id']}"
         )
 
         if response.status_code == 200:
-            request_dict["workstation"] = response.json()["data"][0]
+            request_dict["workstation"] = response.json()["data"]
 
         final_list.append(request_dict)
     return final_list
