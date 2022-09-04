@@ -21,42 +21,50 @@ class UpdateHasModel(BaseModel):
     event_date: str | None = None
     request_status: str | None = "pending"
     priority: str | None = "normal"
+    alert_dates: List[str] | None = None
+    description: str | None = None
 
 
 class UpdateRequestModel(BaseModel):
     attendant_name: str | None = None
     applicant_name: str | None = None
     applicant_phone: str | None = None
-    place: str | None = None
-    description: str | None = None
     created_at: str | None = None
+    city_id: int | None = None
     workstation_id: int | None = None
     problems: List[UpdateHasModel] | None = None
 
     class Config:
         schema_extra = {
             "example": {
+                "attendant_name": "John Doe",
                 "applicant_name": "Fulano de Tal",
                 "applicant_phone": "999999999",
-                "place": "Sala de Testes",
-                "description": "Ta tudo dando errado nos testes.",
+                "city_id": 1,
                 "workstation_id": 2,
                 "problems": [
                     {
                         "category_id": 1,
-                        "problem_id": 1,
-                        "is_event": False,
-                        "event_date": None,
+                        "problem_id": 2,
+                        "is_event": True,
+                        "event_date": "2020-02-01T00:00:00",
+                        "description": "Chamado sobre acesso a internet.",
                         "request_status": "pending",
                         "priority": "high",
+                        "alert_dates": [
+                            "2022-01-01T00:00:00",
+                            "2022-01-02T00:00:00",
+                        ],
                     },
                     {
                         "category_id": 1,
-                        "problem_id": 2,
+                        "problem_id": 1,
                         "is_event": True,
-                        "event_date": "2020-01-01T00:00:00",
+                        "event_date": "2024-02-01T00:00:00",
+                        "description": "Chamado sobre acesso a internet.",
                         "request_status": "pending",
-                        "priority": "urgent",
+                        "priority": "normal",
+                        "alert_dates": [],
                     },
                 ],
             }
@@ -362,10 +370,7 @@ async def update_chamado(
     data: UpdateRequestModel, request_id: int, db: Session = Depends(get_db)
 ):
     try:
-        data_dict = data.dict(exclude_none=True)
-        if data.attendant_name:
-            data_dict.pop("attendant_name")
-
+        data_dict = data.dict()
         problems = data_dict.pop("problems")
         to_update = (
             db.query(Request)
@@ -375,11 +380,41 @@ async def update_chamado(
         if to_update:
             db.commit()
             for problem in problems:
+                problem = jsonable_encoder(problem)
+
+                alerts = problem.pop("alert_dates")
                 problem["request_id"] = request_id
-                db.query(has).filter(has.c.request_id == request_id).filter(
-                    has.c.problem_id == problem["problem_id"]
-                ).update(problem)
-            db.commit()
+                print(f" problem = {problem}")
+
+                has_updated = (
+                    db.query(has)
+                    .filter(
+                        has.c.request_id == request_id,
+                        has.c.problem_id == problem["problem_id"],
+                    )
+                    .update(problem)
+                )
+
+                if has_updated:
+                    db.commit()
+                    has_data = (
+                        db.query(has)
+                        .filter(
+                            has.c.request_id == request_id,
+                            has.c.problem_id == problem["problem_id"],
+                        )
+                        .first()
+                    )
+                    db.query(alert_date).filter_by(has_id=has_data.id).delete()
+                    db.commit()
+                    for alert in alerts:
+                        alert = jsonable_encoder(alert)
+                        db.execute(
+                            insert(alert_date).values(
+                                **{"alert_date": alert, "has_id": has_data.id}
+                            )
+                        )
+                        db.commit()
             query = db.query(Request).filter(Request.id == request_id).all()
             final_list = get_has_data(query, db)
             query = jsonable_encoder(final_list)

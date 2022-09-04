@@ -32,9 +32,9 @@ def generate_metrics():
     with urllib.request.urlopen(url) as res:
         data = json.load(res)
         date = datetime.now()
-        date_padrao_hilmer = f"{date.month}-{date.day}-{date.year}-{date.hour}-{date.minute}-{date.second}" # noqa E501
+        date_padrao_hilmer = f"{date.month}-{date.day}-{date.year}-{date.hour}-{date.minute}-{date.second}"  # noqa E501
 
-        filename = f"{prefix}-{underlined_repo_name}-{date_padrao_hilmer}-{repository_version}.json" # noqa E501
+        filename = f"{prefix}-{underlined_repo_name}-{date_padrao_hilmer}-{repository_version}.json"  # noqa E501
         print(filename)
         with open(filename, "w") as file:
             json.dump(data, file)

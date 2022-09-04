@@ -26,7 +26,7 @@ class EnumPriority(str, enum.Enum):
 alert_date = Table(
     "alert_date",
     Base.metadata,
-    Column("has_id", Integer, ForeignKey("has.id")),
+    Column("has_id", Integer, ForeignKey("has.id"), nullable=False),
     Column("alert_date", DATE, nullable=False),
 )
 
@@ -35,8 +35,8 @@ has = Table(
     "has",
     Base.metadata,
     Column("id", Integer, primary_key=True),
-    Column("problem_id", Integer, ForeignKey("problem.id")),
-    Column("request_id", Integer, ForeignKey("request.id")),
+    Column("problem_id", Integer, ForeignKey("problem.id"), nullable=False),
+    Column("request_id", Integer, ForeignKey("request.id"), nullable=False),
     Column("category_id", Integer, nullable=False),
     Column("is_event", Boolean, nullable=True),
     Column("event_date", TIMESTAMP, nullable=True),
