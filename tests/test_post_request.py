@@ -5,8 +5,7 @@ def test_post_request(client):
             "attendant_name": "Fulano",
             "applicant_name": "Ciclano",
             "applicant_phone": "1111111111",
-            "place": "Sala de Reuniões",
-            "description": "Chamado aberto para acesso a internet.",
+            "city_id": 1,
             "workstation_id": 1,
             "problems": [
                 {
@@ -14,12 +13,14 @@ def test_post_request(client):
                     "problem_id": 1,
                     "is_event": False,
                     "request_status": "pending",
+                    "description": "Chamado sobre acesso a internet.",
                     "priority": "normal",
                 },
                 {
                     "category_id": 1,
                     "problem_id": 2,
-                    "is_event": False,
+                    "is_event": True,
+                    "description": "Chamado sobre acesso a internet.",
                     "request_status": "pending",
                     "priority": "normal",
                 },
