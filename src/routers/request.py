@@ -15,6 +15,7 @@ router = APIRouter()
 
 
 class UpdateHasModel(BaseModel):
+    id: int
     problem_id: int | None = None
     category_id: int | None = None
     is_event: bool | None = False
@@ -44,6 +45,7 @@ class UpdateRequestModel(BaseModel):
                 "workstation_id": 2,
                 "problems": [
                     {
+                        "id": 1,
                         "category_id": 1,
                         "problem_id": 2,
                         "is_event": True,
@@ -57,6 +59,7 @@ class UpdateRequestModel(BaseModel):
                         ],
                     },
                     {
+                        "id": 2,
                         "category_id": 1,
                         "problem_id": 1,
                         "is_event": True,
@@ -370,61 +373,63 @@ async def update_chamado(
     data: UpdateRequestModel, request_id: int, db: Session = Depends(get_db)
 ):
     try:
-        data_dict = data.dict()
-        problems = data_dict.pop("problems")
-        to_update = (
-            db.query(Request)
-            .filter(Request.id == request_id)
-            .update(data_dict)
+        query = (
+            db.query(Request).filter(Request.id == request_id).one_or_none()
         )
-        if to_update:
-            db.commit()
-            for problem in problems:
-                problem = jsonable_encoder(problem)
+        if query:
+            data_dict = data.dict()
+            problems = data_dict.pop("problems")
+            to_update = (
+                db.query(Request)
+                .filter(Request.id == request_id)
+                .update(data_dict)
+            )
+            if to_update:
+                db.commit()
+                for problem in problems:
+                    problem = jsonable_encoder(problem)
+                    problem_id = problem.pop("id")
 
-                alerts = problem.pop("alert_dates")
-                problem["request_id"] = request_id
-                print(f" problem = {problem}")
+                    alerts = problem.pop("alert_dates")
+                    problem["request_id"] = request_id
+                    print(f" problem = {problem}")
 
-                has_updated = (
-                    db.query(has)
-                    .filter(
-                        has.c.request_id == request_id,
-                        has.c.problem_id == problem["problem_id"],
-                    )
-                    .update(problem)
-                )
-
-                if has_updated:
-                    db.commit()
-                    has_data = (
+                    has_updated = (
                         db.query(has)
-                        .filter(
-                            has.c.request_id == request_id,
-                            has.c.problem_id == problem["problem_id"],
-                        )
-                        .first()
+                        .filter(has.c.id == problem_id)
+                        .update(problem)
                     )
-                    db.query(alert_date).filter_by(has_id=has_data.id).delete()
-                    db.commit()
-                    for alert in alerts:
-                        alert = jsonable_encoder(alert)
-                        db.execute(
-                            insert(alert_date).values(
-                                **{"alert_date": alert, "has_id": has_data.id}
-                            )
-                        )
+
+                    if has_updated:
                         db.commit()
+                        db.query(alert_date).filter_by(
+                            has_id=problem_id
+                        ).delete()
+                        db.commit()
+                        for alert in alerts:
+                            alert = jsonable_encoder(alert)
+                            db.execute(
+                                insert(alert_date).values(
+                                    **{
+                                        "alert_date": alert,
+                                        "has_id": problem_id,
+                                    }
+                                )
+                            )
+                            db.commit()
             query = db.query(Request).filter(Request.id == request_id).all()
             final_list = get_has_data(query, db)
             query = jsonable_encoder(final_list)
             message = "Dados atualizados com sucesso"
             status_code = status.HTTP_200_OK
-
             response_data = {"message": message, "error": None, "data": query}
         else:
-            message = "Chamado não encontrado"
-            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": "Chamado não encontrado",
+                "error": None,
+                "data": None,
+            }
+            status_code = status.HTTP_404_NOT_FOUND
         return JSONResponse(
             content=jsonable_encoder(response_data), status_code=status_code
         )
