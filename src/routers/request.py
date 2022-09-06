@@ -306,22 +306,8 @@ async def get_event(
         )
 
 
-def get_request_data(
-    db: Session, is_event: bool = None, request_status: str = None
-):
-
-    if is_event and request_status:
-        query = (
-            db.query(has)
-            .filter(has.c.is_event, has.c.request_status == request_status)
-            .all()
-        )
-    elif is_event and not request_status:
-        query = db.query(has).filter(has.c.is_event).all()
-    elif request_status and not is_event:
-        query = (
-            db.query(has).filter(has.c.request_status == request_status).all()
-        )
+def get_request_data(db: Session, data: dict):
+    query = db.query(has).filter_by(**data).all()
 
     final_list = []
     for event in query:
@@ -399,32 +385,17 @@ async def get_chamado(
                 content=jsonable_encoder(response_data),
                 status_code=status_code,
             )
-        if problem_id:
-            query = (
-                db.query(Request)
-                .filter(Request.problems.any(id=problem_id))
-                .all()
-            )
 
-            if query:
-                final_list = get_has_data(query, db)
-                query = jsonable_encoder(final_list)
-                message = "Dados buscados com sucesso"
-                status_code = status.HTTP_200_OK
-            else:
-                message = "Nenhum chamado com esse tipo de problema encontrado"
-                status_code = status.HTTP_200_OK
+        if is_event or request_status or problem_id:
+            data_dict = {
+                "is_event": is_event,
+                "request_status": request_status,
+                "problem_id": problem_id,
+            }
 
-            response_data = {"message": message, "error": None, "data": query}
+            filtered_dict = {k: v for k, v in data_dict.items() if v}
 
-            return JSONResponse(
-                content=jsonable_encoder(response_data),
-                status_code=status_code,
-            )
-        if is_event or request_status:
-            final_list = get_request_data(
-                db, is_event=is_event, request_status=request_status
-            )
+            final_list = get_request_data(db, filtered_dict)
             query = jsonable_encoder(final_list)
             message = "Dados buscados com sucesso"
             status_code = status.HTTP_200_OK
