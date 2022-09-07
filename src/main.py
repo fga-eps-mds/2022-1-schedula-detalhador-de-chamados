@@ -25,21 +25,26 @@ async def process_request_headers(request: Request, call_next):
     method = str(request.method)
     url = str(request.url)
 
-    if 'chamado' in url or 'problema' in url or 'categoria' in url:
-        if method == 'DELETE':
-            if auth != 'admin':
-                return response_unauthorized
-        if method == 'PUT':
-            if auth not in ['admin', 'manager']:
+    if method == 'GET':
+        if 'chamado' in url or 'problema' in url:
+            if auth not in ['admin', 'manager', 'basic', 'public']:
                 return response_unauthorized
 
-    if method == 'GET' or method == 'POST':
+    if method == 'DELETE':
+        if auth != 'admin':
+            return response_unauthorized
+
+    if method == 'POST':
         if 'chamado' in url:
             if auth not in ['admin', 'manager', 'basic', 'public']:
                 return response_unauthorized
         elif 'problema' in url or 'categoria' in url:
-            if auth not in ['admin', 'manager', 'basic', 'public']:
+            if auth not in ['admin', 'manager']:
                 return response_unauthorized
+
+    if method == 'PUT':
+        if auth not in ['admin', 'manager']:
+            return response_unauthorized
 
     return await call_next(request)
 

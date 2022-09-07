@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
-from models import Base, Problem
+from models import Base, Category, Problem
 
 router = APIRouter()
 
@@ -101,6 +101,19 @@ async def get_problems(
 async def post_problem(data: ProblemModel, db: Session = Depends(get_db)):
     try:
         problem = Problem(**data.dict())
+
+        if not db.query(Category).filter(Category.id == data.category_id)\
+                .one_or_none():
+            response_data = jsonable_encoder(
+                {
+                    "message": "Categoria de problema invalida.",
+                    "error": True,
+                    "data": None,
+                }
+            )
+            return JSONResponse(
+                content=response_data, status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         db.add(problem)
         db.commit()
