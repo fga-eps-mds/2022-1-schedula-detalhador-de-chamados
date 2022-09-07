@@ -18,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.middleware("http")
 async def process_request_headers(request: Request, call_next):
     auth = str(get_authorization(request))
