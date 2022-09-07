@@ -1,8 +1,8 @@
 import os
-import requests as r
 from datetime import datetime, timedelta
 from typing import List, Union
 
+import requests as r
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -386,14 +386,18 @@ async def get_chamado(
                 status_code=status_code,
             )
 
-        if is_event or request_status or problem_id:
+        if is_event is not None or request_status or problem_id:
             data_dict = {
                 "is_event": is_event,
                 "request_status": request_status,
                 "problem_id": problem_id,
             }
 
-            filtered_dict = {k: v for k, v in data_dict.items() if v}
+            filtered_dict = {
+                key: value
+                for key, value in data_dict.items()
+                if value is not None
+            }
 
             final_list = get_request_data(db, filtered_dict)
             query = jsonable_encoder(final_list)
