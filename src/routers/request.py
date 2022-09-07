@@ -1,8 +1,8 @@
 import os
-import requests as r
 from datetime import datetime, timedelta
 from typing import List, Union
 
+import requests as r
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse

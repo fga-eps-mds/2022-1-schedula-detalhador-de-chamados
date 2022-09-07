@@ -11,8 +11,12 @@ app.include_router(category.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://2022-1-schedula-front-homol.vercel.app",
+        "http://localhost:3000",
+    ],
     allow_methods=["*"],
+    allow_credentials=True,
     allow_headers=["*"],
 )
 
