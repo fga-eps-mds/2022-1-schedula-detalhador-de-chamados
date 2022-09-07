@@ -181,6 +181,21 @@ async def put_problem(
             db.query(Problem).filter_by(id=problem_id).update(data.dict())
         )
         if problem:
+
+            if not db.query(Category).filter(Category.id == data.category_id)\
+                    .one_or_none():
+                response_data = jsonable_encoder(
+                    {
+                        "message": "Categoria de problema invalida.",
+                        "error": True,
+                        "data": None,
+                    }
+                )
+                return JSONResponse(
+                    content=response_data,
+                    status_code=status.HTTP_400_BAD_REQUEST
+                )
+
             db.commit()
             problem_data = (
                 db.query(Problem).filter_by(id=problem_id).one_or_none()
