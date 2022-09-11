@@ -306,25 +306,77 @@ async def get_event(
         )
 
 
+def get_request_data(db: Session, data: dict):
+    query = db.query(has).filter_by(**data).all()
+
+    final_list = []
+    for event in query:
+        tmp = []
+        event_dict = jsonable_encoder(event)
+        request = (
+            db.query(Request)
+            .filter(Request.id == event_dict["request_id"])
+            .first()
+        )
+        problem_data = db.query(Problem).filter_by(id=event.problem_id).first()
+        category_data = (
+            db.query(Category).filter_by(id=event.category_id).first()
+        )
+        alert_dates = (
+            db.query(alert_date).filter(alert_date.c.has_id == event.id).all()
+        )
+        alerts_dict = jsonable_encoder(alert_dates)
+        problem_dict = jsonable_encoder(problem_data)
+        category_dict = jsonable_encoder(category_data)
+
+        request_dict = jsonable_encoder(request)
+        event_dict["problem"] = problem_dict
+        event_dict["category"] = category_dict
+        event_dict["alert_dates"] = [
+            date["alert_date"] for date in alerts_dict
+        ]
+        tmp.append(event_dict)
+
+        request_dict["problems"] = tmp
+
+        response = r.get(
+            GERENCIADOR_DE_LOCALIDADES_URL
+            + f"/city?city_id={request_dict['city_id']}"
+        )
+
+        if response.status_code == 200:
+            request_dict["city"] = response.json()["data"]
+
+        response = r.get(
+            GERENCIADOR_DE_LOCALIDADES_URL
+            + f"/workstation?id={request_dict['workstation_id']}"
+        )
+
+        if response.status_code == 200:
+            request_dict["workstation"] = response.json()["data"]
+
+        final_list.append(request_dict)
+    return final_list
+
+
 @router.get("/chamado", tags=["Chamado"])
 async def get_chamado(
-    problem_id: Union[int, None] = None, db: Session = Depends(get_db)
+    id: int = None,
+    problem_id: Union[int, None] = None,
+    is_event: Union[bool, None] = None,
+    request_status: Union[str, None] = None,
+    db: Session = Depends(get_db),
 ):
     try:
-        if problem_id:
-            query = (
-                db.query(Request)
-                .filter(Request.problems.any(id=problem_id))
-                .all()
-            )
-
+        if id:
+            query = db.query(Request).filter(Request.id == id).all()
             if query:
                 final_list = get_has_data(query, db)
                 query = jsonable_encoder(final_list)
                 message = "Dados buscados com sucesso"
                 status_code = status.HTTP_200_OK
             else:
-                message = "Nenhum chamado com esse tipo de problema encontrado"
+                message = "Nenhum chamado com esse id encontrado"
                 status_code = status.HTTP_200_OK
 
             response_data = {"message": message, "error": None, "data": query}
@@ -333,6 +385,32 @@ async def get_chamado(
                 content=jsonable_encoder(response_data),
                 status_code=status_code,
             )
+
+        if is_event is not None or request_status or problem_id:
+            data_dict = {
+                "is_event": is_event,
+                "request_status": request_status,
+                "problem_id": problem_id,
+            }
+
+            filtered_dict = {
+                key: value
+                for key, value in data_dict.items()
+                if value is not None
+            }
+
+            final_list = get_request_data(db, filtered_dict)
+            query = jsonable_encoder(final_list)
+            message = "Dados buscados com sucesso"
+            status_code = status.HTTP_200_OK
+
+            response_data = {"message": message, "error": None, "data": query}
+
+            return JSONResponse(
+                content=jsonable_encoder(response_data),
+                status_code=status_code,
+            )
+
         else:
             query = db.query(Request).all()
             all_data = get_has_data(query, db)
