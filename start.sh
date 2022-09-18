@@ -10,4 +10,4 @@ echo "Banco foi inicializado"
 
 echo "inicializado Aplicação"
 
-uvicorn main:app --host  0.0.0.0 --proxy-headers --port $APP_PORT_DETALHADOR 
+uvicorn main:app --host  0.0.0.0 --proxy-headers --port $APP_PORT_DETALHADOR

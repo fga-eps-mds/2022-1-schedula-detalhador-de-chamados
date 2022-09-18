@@ -239,10 +239,9 @@ def get_has_data(query, db: Session):
         if response.status_code == 200:
             request_dict["city"] = response.json()["data"]
 
-        response = r.get(
-            GERENCIADOR_DE_LOCALIDADES_URL
-            + f"/workstation?id={request_dict['workstation_id']}"
-        )
+        response = r.get(GERENCIADOR_DE_LOCALIDADES_URL
+                         + f"/workstation?id={request_dict['workstation_id']}"
+                         )
 
         if response.status_code == 200:
             request_dict["workstation"] = response.json()["data"]
@@ -335,6 +334,7 @@ def get_request_data(db: Session, data: dict):
         event_dict["alert_dates"] = [
             date["alert_date"] for date in alerts_dict
         ]
+
         tmp.append(event_dict)
 
         request_dict["problems"] = tmp
@@ -356,12 +356,26 @@ def get_request_data(db: Session, data: dict):
             request_dict["workstation"] = response.json()["data"]
 
         final_list.append(request_dict)
+
+    if data.get("is_event"):
+        tmp_list = final_list
+        final_list = []
+        for request in tmp_list:
+            if len(request["problems"]) > 1:
+                for problem in request["problems"]:
+                    new_request = request
+                    new_request["problems"] = [problem]
+
+                    final_list.append(new_request)
+            else:
+                final_list.append(request)
+
     return final_list
 
 
 @router.get("/chamado", tags=["Chamado"])
 async def get_chamado(
-    id: int = None,
+    id: Union[int, None] = None,
     problem_id: Union[int, None] = None,
     is_event: Union[bool, None] = None,
     request_status: Union[str, None] = None,
@@ -386,7 +400,7 @@ async def get_chamado(
                 status_code=status_code,
             )
 
-        if is_event is not None or request_status or problem_id:
+        if is_event or request_status or problem_id:
             data_dict = {
                 "is_event": is_event,
                 "request_status": request_status,

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, status
-from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
 
 from routers import category, problem, request
 from utils.auth_utils import get_authorization
