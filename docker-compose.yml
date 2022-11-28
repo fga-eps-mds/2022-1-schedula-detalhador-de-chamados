@@ -1,30 +1,41 @@
 version: "3"
 
 services:
-  detalhador-de-chamados:
-    build:
-      dockerfile: Dockerfile
-      context: .
-    env_file: .env
-    container_name: detalhador-de-chamados
+  app:
+    container_name: schedula_core
+    image: schedula/core
+    build: .
     volumes:
-      - "./src/:/home/src/"
+      - ".:/code/"
     ports:
-      - ${APP_PORT_DETALHADOR}:${APP_PORT_DETALHADOR}
+      - "3002:3000"
+    environment:
+      - ENVIRONMENT=DEVELOPMENT
+      - NODE_ENV=DEVELOPMENT
+      - DATABASE_HOST=postgres
+      - DATABASE_USER=postgres
+      - DATABASE_PASS=postgres
+      - DATABASE_DB=schedula_core
+      - DATABASE_PORT=5432
+
+  postgres:
+    image: postgres:latest
+    container_name: schedula_core_db
+    ports:
+      - "5105:5432"
+    volumes:
+      - ./.ignore/postgres/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=schedula_core
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "schedula@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "schedula123!"
+    ports:
+      - "16545:80"
     depends_on:
-      - db
-
-  db:
-    image: postgres:13.2-alpine
-    container_name: db
-    env_file: .env
-    volumes:
-      - ./database:/docker-entrypoint-initdb.d
-
-    ports:
-      - ${DB_PORT}:${DB_PORT}
-
-networks:
-  default:
-    external:
-      name: schedula-network
+      - postgres
