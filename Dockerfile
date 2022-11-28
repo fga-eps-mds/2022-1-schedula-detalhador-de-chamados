@@ -1,24 +1,11 @@
-FROM python:3.10
+FROM node:18-alpine
 
-ENV TZ=America/Sao_Paulo
+WORKDIR /code/
 
-WORKDIR /home
+COPY package.json .
+RUN yarn install
 
-RUN apt-get update && \
-    apt-get -qq -y install netcat-openbsd
+COPY . .
 
-COPY requirements.txt .
-
-RUN pip install -r requirements.txt
-
-COPY ./src/ .
-
-COPY ./tests/ .
-
-COPY ./tests/data ./tests/data/
-
-COPY ./start.sh .
-
-RUN chmod +x start.sh
-
-CMD ./start.sh
+ENTRYPOINT [ "yarn" ]
+CMD [ "start:dev" ]

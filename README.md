@@ -1,58 +1,73 @@
-# Detalhador de chamados
----
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+</p>
 
-## Integrantes
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-| Matricula  | Membro                          | Disciplina |
-|------------|---------------------------------|------------|
-| 18/0106970 | Matheus Gabriel Alves Rodrigues | EPS        |
-| 18/0113151 | Eduardo Nunes Picolo            | EPS        |
-| 18/0129287 | Pedro Henrique Vieira de Lima   | EPS        |
-| 14/0065547 | Roberto Martins da Nóbrega      | EPS        |
-| 18/0130722 | Samuel Nogueira Bacelar         | EPS        |
-| 21/1043647 | Giovanni Alvissus               | MDS        |
-| 20/0027158 | Rodrigo Edmar Wright Dos Santos | MDS        |
-| 20/0042327 | Nicolas Chagas Souza            | MDS        |
-| 19/0127767 | Davi Silva Matias               | MDS        |
-| 20/0072854 | Bruno Seiji Kishibe             | MDS        |
-| 20/2017521 | Algusto Rodrigues Caldas        | MDS        |
-| 18/0113496 | Guilherme de Oliveira Mendes    | MDS        |
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Execução
+## Description
 
-```
-    $ git clone
-    $ cd schedula-detalhador-de-chamados
-    $ docker-compose up --build -d
-```
-acessar o site: `http://localhost:5000/`
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Testes
+## Installation
 
 ```bash
-docker exec -it detalhador-de-chamados pytest --cov -vv
-```
-## Lint
-
-Instalando dependencias
-
-```
-pip install isort flake8 autopep8
+$ npm install
 ```
 
-Verifica o pep8 nos arquivos do projeto
-``` 
-flake8 **/*.py
-``` 
-Verifica os imports da aplicação
-``` 
-isort **/*.py --diff
-``` 
-Resolve problemas com a ordenação dos imports
-``` 
-isort --atomic .
+## Running the app
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
 ```
-Utiliza o autopep8 para tentar resolver a maioria dos problemas do flake8
-``` 
-autopep8 --in-place --aggressive --aggressive **/*.py
+
+## Test
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
 ```
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
+
+## License
+
+Nest is [MIT licensed](LICENSE).
