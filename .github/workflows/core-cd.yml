@@ -1,0 +1,26 @@
+name: core-cd
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  ci:
+    uses: fga-eps-mds/2022-2-schedula-detalhador-de-chamados/.github/workflows/user-ci.yml@develop
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build app
+        run: docker-compose up -d app
+
+  deploy:
+    needs: [ ci, build ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: akhileshns/heroku-deploy@v3.12.12
+      with:
+        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+        heroku_email: ${{secrets.HEROKU_EMAIL}}
+        remote_branch: main
