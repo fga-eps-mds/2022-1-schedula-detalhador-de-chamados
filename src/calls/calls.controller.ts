@@ -7,7 +7,7 @@ import {
     Post,
     Put,
 } from '@nestjs/common';
-import { Call } from './call.entity';
+import { Call } from './calls.entity';
 import { CallsService } from './calls.service';
 import { CreateCalldto } from './dto/createCalldto';
 

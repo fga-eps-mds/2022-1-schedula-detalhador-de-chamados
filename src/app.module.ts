@@ -1,4 +1,3 @@
-import { Call } from './calls/call.entity';
 import { CallModule } from './calls/calls.module';
 import { Module } from '@nestjs/common';
 import configuration from './configs/configuration';
