@@ -36,9 +36,9 @@ export class CallsService {
   }
 
   async findCalls(): Promise<Call[]> {
-    const calls = this.CallRepo.find({ relations: ['alertas'] });
+    const calls = this.CallRepo.find({});
     if (!calls)
-      throw new NotFoundException('Não existem calls cadastrados');
+      throw new NotFoundException('Não existem chamados cadastrados');
     return calls;
   }
 
@@ -46,7 +46,7 @@ export class CallsService {
     const Call = await this.CallRepo.findOne({
       where: { id: callId },
     });
-    if (!Call) throw new NotFoundException('Call não encontrado');
+    if (!Call) throw new NotFoundException('Chamado não encontrado');
     return Call;
   }
 
@@ -79,7 +79,7 @@ export class CallsService {
     const result = await this.CallRepo.delete({ id: callId });
     if (result.affected === 0) {
       throw new NotFoundException(
-        'Nao foi encontrado um call com este id',
+        'Nao foi encontrado um chamado com este id',
       );
     }
   }

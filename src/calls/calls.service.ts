@@ -66,7 +66,8 @@ export class CallsService {
     call.problem_category  = problem_category;
     call.problem_type = problem_type;
     call.email = email;
-
+    call.date = new Date();
+    
     try {
       await this.CallRepo.save(call);
       return call;
