@@ -10,22 +10,22 @@ import {
 
 
 @Entity()
-export class Chamado extends BaseEntity {
+export class Call extends BaseEntity {
    
   @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column()
-  solicitante: string;
+  requester: string;
   @Column()
-  telefone: string;
+  phone: string;
   @Column()
-  cidade: string;
+  city: string;
   @Column()
-  posto_trabalho: string;
+  workstation: string;
   @Column()
-  categoria_problema: string;
+  problem_category: string;
   @Column()
-  tipo_problema: string;
+  problem_type: string;
   @Column()
   email: string;
 

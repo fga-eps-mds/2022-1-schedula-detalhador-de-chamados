@@ -3,32 +3,32 @@
 
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateChamadodto {
+export class CreateCalldto {
   //chamado : CreateChamadodto;
   @IsNotEmpty({
     message: 'Solicitante não fornecido',
   })
-  solicitante: string;
+  requester: string;
   @IsNotEmpty({
     message: 'Telefone não fornecido',
   })
-  telefone: string;
+  phone: string;
   @IsNotEmpty({
     message: 'Cidade não fornecido',
   })
-  cidade: string;
+  city: string;
   @IsNotEmpty({
     message: 'Posto de Trabalho não fornecido',
   })
-  posto_trabalho: string;
+  workstation: string;
   @IsNotEmpty({
     message: 'categoria do Problema não fornecido',
   })
-  categoria_problema: string;
+  problem_category: string;
   @IsNotEmpty({
     message: 'Tipo do Problema não fornecido',
   })
-  tipo_problema: string;
+  problem_type: string;
   @IsNotEmpty({
     message: 'Data não fornecido',
   })

@@ -5,81 +5,81 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Chamado } from './chamado.entity';
-import { CreateChamadodto } from './dto/createChamadodto';
+import { Call } from './call.entity';
+import { CreateCalldto } from './dto/createCalldto';
 
 @Injectable()
-export class ChamadosService {
+export class CallsService {
   constructor(
-    @InjectRepository(Chamado)
-    private ChamadoRepo: Repository<Chamado>,
+    @InjectRepository(Call)
+    private CallRepo: Repository<Call>,
   ) {}
 
-  async createChamado(
-    createChamadodto: CreateChamadodto,
-  ): Promise<Chamado> {
-    const {solicitante,telefone,cidade,posto_trabalho,categoria_problema,tipo_problema,email} = createChamadodto;
-    const chamado = this.ChamadoRepo.create();
-    chamado.solicitante = solicitante;
-    chamado.telefone = telefone;
-    chamado.cidade = cidade;
-    chamado.posto_trabalho  = posto_trabalho;
-    chamado.categoria_problema  = categoria_problema;
-    chamado.tipo_problema = tipo_problema;
-    chamado.email = email;
+  async createCall(
+    createCalldto: CreateCalldto,
+  ): Promise<Call> {
+    const {requester,phone,city,workstation,problem_category,problem_type,email} = createCalldto;
+    const call = this.CallRepo.create();
+    call.requester = requester;
+    call.phone = phone;
+    call.city = city;
+    call.workstation  = workstation;
+    call.problem_category  = problem_category;
+    call.problem_type = problem_type;
+    call.email = email;
     try {
-      await chamado.save();
-      return chamado;
+      await call.save();
+      return call;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async findChamados(): Promise<Chamado[]> {
-    const chamados = this.ChamadoRepo.find({ relations: ['alertas'] });
-    if (!chamados)
-      throw new NotFoundException('Não existem chamados cadastrados');
-    return chamados;
+  async findCalls(): Promise<Call[]> {
+    const calls = this.CallRepo.find({ relations: ['alertas'] });
+    if (!calls)
+      throw new NotFoundException('Não existem calls cadastrados');
+    return calls;
   }
 
-  async findChamadoById(chamadoId: string): Promise<Chamado> {
-    const agendamento = await this.ChamadoRepo.findOne({
-      where: { id: chamadoId },
+  async findCallById(callId: string): Promise<Call> {
+    const Call = await this.CallRepo.findOne({
+      where: { id: callId },
     });
-    if (!agendamento) throw new NotFoundException('Agendamento não encontrado');
-    return agendamento;
+    if (!Call) throw new NotFoundException('Call não encontrado');
+    return Call;
   }
 
-  async updateChamado(
-    createChamdodto: CreateChamadodto,
-    chamadoId: string,
-  ): Promise<Chamado> {
-    const chamado = await this.ChamadoRepo.findOneBy({
-      id: chamadoId,
+  async updateCall(
+    createCalldto: CreateCalldto,
+    callId: string,
+  ): Promise<Call> {
+    const call = await this.CallRepo.findOneBy({
+      id: callId,
     });
-    const {solicitante,telefone,cidade,posto_trabalho,categoria_problema,tipo_problema,email} = createChamadodto;
+    const {requester,phone,city,workstation,problem_category,problem_type,email} = createCalldto;
 
-    chamado.solicitante = solicitante;
-    chamado.telefone = telefone;
-    chamado.cidade = cidade;
-    chamado.posto_trabalho  = posto_trabalho;
-    chamado.categoria_problema  = categoria_problema;
-    chamado.tipo_problema = tipo_problema;
-    chamado.email = email;
+    call.requester = requester;
+    call.phone = phone;
+    call.city = city;
+    call.workstation  = workstation;
+    call.problem_category  = problem_category;
+    call.problem_type = problem_type;
+    call.email = email;
 
     try {
-      await this.ChamadoRepo.save(chamado);
-      return chamado;
+      await this.CallRepo.save(call);
+      return call;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async deleteAgendamento(chamadoId: string) {
-    const result = await this.ChamadoRepo.delete({ id: chamadoId });
+  async deleteCall(callId: string) {
+    const result = await this.CallRepo.delete({ id: callId });
     if (result.affected === 0) {
       throw new NotFoundException(
-        'Nao foi encontrado um chamado com este id',
+        'Nao foi encontrado um call com este id',
       );
     }
   }
