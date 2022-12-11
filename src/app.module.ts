@@ -1,7 +1,8 @@
+import { Call } from './calls/call.entity';
+import { CallModule } from './calls/calls.module';
 import { Module } from '@nestjs/common';
 import configuration from './configs/configuration';
 import { ConfigModule } from '@nestjs/config';
-import { AgendamentoModule } from './agendamentos/agendamento.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
@@ -17,7 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       entities: [__dirname + '/../**/*.entity.{js,ts}'],
       synchronize: true,
     }),
-    AgendamentoModule,
+    CallModule,
   ],
   controllers: [],
   providers: [],
