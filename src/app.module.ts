@@ -1,4 +1,4 @@
-import { CallModule } from './calls/calls.module';
+import { CallModule } from './calls/issue.module';
 import { Module } from '@nestjs/common';
 import configuration from './configs/configuration';
 import { ConfigModule } from '@nestjs/config';

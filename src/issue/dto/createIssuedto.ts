@@ -3,7 +3,7 @@
 
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateCalldto {
+export class CreateIssuedto {
   //chamado : CreateChamadodto;
   @IsNotEmpty({
     message: 'Solicitante não fornecido',

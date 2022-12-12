@@ -10,7 +10,7 @@ import {
 
 
 @Entity()
-export class Call extends BaseEntity {
+export class Issue extends BaseEntity {
    
   @PrimaryGeneratedColumn('uuid')
   id: string;
