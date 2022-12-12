@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   app:
@@ -6,9 +6,9 @@ services:
     image: schedula/core
     build: .
     volumes:
-      - ".:/code/"
+      - '.:/code/'
     ports:
-      - "3002:3000"
+      - '3002:3000'
     environment:
       - ENVIRONMENT=DEVELOPMENT
       - NODE_ENV=DEVELOPMENT
@@ -22,7 +22,7 @@ services:
     image: postgres:latest
     container_name: schedula_core_db
     ports:
-      - "5105:5432"
+      - '5105:5432'
     volumes:
       - ./.ignore/postgres/postgres:/var/lib/postgresql/data
     environment:
@@ -33,9 +33,9 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: "schedula@gmail.com"
-      PGADMIN_DEFAULT_PASSWORD: "schedula123!"
+      PGADMIN_DEFAULT_EMAIL: 'schedula@gmail.com'
+      PGADMIN_DEFAULT_PASSWORD: 'schedula123!'
     ports:
-      - "16545:80"
+      - '16545:80'
     depends_on:
       - postgres
