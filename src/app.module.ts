@@ -1,9 +1,10 @@
-import { CallModule } from './calls/issue.module';
+import { IssueModule } from './issue/issue.module';
 import { Module } from '@nestjs/common';
 import configuration from './configs/configuration';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 @Module({
   imports: [
     ConfigModule.forRoot({ load: [configuration] }),
@@ -19,7 +20,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
     CallModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
