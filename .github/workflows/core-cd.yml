@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 jobs:
   ci:
-    uses: fga-eps-mds/2022-2-schedula-detalhador-de-chamados/.github/workflows/user-ci.yml@develop
+    uses: fga-eps-mds/2022-2-schedula-detalhador-de-chamados/.github/workflows/core-ci.yml@main
   build:
     runs-on: ubuntu-latest
     steps:
