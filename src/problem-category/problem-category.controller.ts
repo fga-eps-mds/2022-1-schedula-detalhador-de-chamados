@@ -3,13 +3,15 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
 } from '@nestjs/common';
 import { ProblemCategoryService } from './problem-category.service';
 import { CreateProblemCategoryDto } from './dto/create-problem-category.dto';
 import { UpdateProblemCategoryDto } from './dto/update-problem-category.dto';
+import { ProblemCategory } from './entities/problem-category.entity';
+import { ReturnProblemCategoryDto } from './dto/return-problem-category.dto';
 
 @Controller('problem-category')
 export class ProblemCategoryController {
@@ -18,30 +20,53 @@ export class ProblemCategoryController {
   ) {}
 
   @Post()
-  create(@Body() createProblemCategoryDto: CreateProblemCategoryDto) {
-    return this.problemCategoryService.create(createProblemCategoryDto);
+  async createProblemCategory(
+    @Body() createProblemCategoryDto: CreateProblemCategoryDto,
+  ) {
+    const problemCategory =
+      await this.problemCategoryService.createProblemCategory(
+        createProblemCategoryDto,
+      );
+    return {
+      problemCategory,
+      message: 'Categoria de problema cadastrado com sucesso',
+    };
   }
 
   @Get()
-  findAll() {
-    return this.problemCategoryService.findAll();
+  async findProblemCategories(): Promise<ProblemCategory[]> {
+    const problemCategory = this.problemCategoryService.findProblemCategories();
+    return problemCategory;
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.problemCategoryService.findOne(+id);
+  async findProblemCategory(
+    @Param('id') id,
+  ): Promise<ReturnProblemCategoryDto> {
+    const problemCategory =
+      await this.problemCategoryService.findProblemCategoryById(+id);
+    return {
+      problemCategory,
+      message: 'Categoria de problema encontrada',
+    };
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @Put(':id')
+  async updateProblemCategory(
+    @Param('id') id: number,
     @Body() updateProblemCategoryDto: UpdateProblemCategoryDto,
   ) {
-    return this.problemCategoryService.update(+id, updateProblemCategoryDto);
+    return this.problemCategoryService.updateProblemCategory(
+      +id,
+      updateProblemCategoryDto,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.problemCategoryService.remove(+id);
+  async deleteProblemCategory(@Param('id') id: number) {
+    await this.problemCategoryService.deleteProblemCategory(+id);
+    return {
+      message: 'Categoria de problema excluída com sucesso',
+    };
   }
 }
