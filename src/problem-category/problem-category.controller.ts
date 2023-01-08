@@ -22,15 +22,12 @@ export class ProblemCategoryController {
   @Post()
   async createProblemCategory(
     @Body() createProblemCategoryDto: CreateProblemCategoryDto,
-  ) {
+  ): Promise<ProblemCategory> {
     const problemCategory =
       await this.problemCategoryService.createProblemCategory(
         createProblemCategoryDto,
       );
-    return {
-      problemCategory,
-      message: 'Categoria de problema cadastrado com sucesso',
-    };
+    return problemCategory;
   }
 
   @Get()
@@ -41,10 +38,10 @@ export class ProblemCategoryController {
 
   @Get(':id')
   async findProblemCategory(
-    @Param('id') id,
+    @Param('id') id: string,
   ): Promise<ReturnProblemCategoryDto> {
     const problemCategory =
-      await this.problemCategoryService.findProblemCategoryById(+id);
+      await this.problemCategoryService.findProblemCategoryById(id);
     return {
       problemCategory,
       message: 'Categoria de problema encontrada',
@@ -53,18 +50,18 @@ export class ProblemCategoryController {
 
   @Put(':id')
   async updateProblemCategory(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateProblemCategoryDto: UpdateProblemCategoryDto,
   ) {
     return this.problemCategoryService.updateProblemCategory(
-      +id,
+      id,
       updateProblemCategoryDto,
     );
   }
 
   @Delete(':id')
-  async deleteProblemCategory(@Param('id') id: number) {
-    await this.problemCategoryService.deleteProblemCategory(+id);
+  async deleteProblemCategory(@Param('id') id: string) {
+    await this.problemCategoryService.deleteProblemCategory(id);
     return {
       message: 'Categoria de problema excluída com sucesso',
     };

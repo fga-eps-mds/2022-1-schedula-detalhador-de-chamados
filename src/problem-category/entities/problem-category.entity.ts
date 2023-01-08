@@ -8,8 +8,8 @@ import {
 } from 'typeorm';
 @Entity()
 export class ProblemCategory extends BaseEntity {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
   @Column()
   name: string;
   @Column()

@@ -20,7 +20,7 @@ export class ProblemCategoryService {
     createProblemCategoryDto: CreateProblemCategoryDto,
   ): Promise<ProblemCategory> {
     const { name, problem_types } = createProblemCategoryDto;
-    return this.problemCategoryRepository.save(createProblemCategoryDto);
+    //return this.problemCategoryRepository.save(createProblemCategoryDto);
     const problemCategory = this.problemCategoryRepository.create();
     problemCategory.name = name;
     problemCategory.problem_types = problem_types;
@@ -42,9 +42,9 @@ export class ProblemCategoryService {
     return problemCategories;
   }
 
-  async findProblemCategoryById(id: number): Promise<ProblemCategory> {
+  async findProblemCategoryById(id: string): Promise<ProblemCategory> {
     const problemCategory = await this.problemCategoryRepository.findOne({
-      select: ['id', 'name', 'problem_types'],
+      where: { id: id },
     });
     if (!problemCategory)
       throw new NotFoundException('Categoria de problema não encontrada');
@@ -53,7 +53,7 @@ export class ProblemCategoryService {
   }
 
   async updateProblemCategory(
-    id: number,
+    id: string,
     updateProblemCategoryDto: UpdateProblemCategoryDto,
   ): Promise<ProblemCategory> {
     const problemCategory = await this.problemCategoryRepository.findOneBy({
@@ -74,7 +74,7 @@ export class ProblemCategoryService {
     }
   }
 
-  async deleteProblemCategory(id: number) {
+  async deleteProblemCategory(id: string) {
     const result = await this.problemCategoryRepository.delete({ id: id });
     if (result.affected === 0) {
       throw new NotFoundException(
