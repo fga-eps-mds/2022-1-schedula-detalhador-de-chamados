@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 export class CreateProblemCategoryDto {
   @IsString({ message: 'Informe um nome válido' })
   name: string;

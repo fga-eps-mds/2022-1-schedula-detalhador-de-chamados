@@ -7,7 +7,7 @@ import {
 import { Repository } from 'typeorm';
 import { CreateProblemCategoryDto } from './dto/create-problem-category.dto';
 import { UpdateProblemCategoryDto } from './dto/update-problem-category.dto';
-import { ProblemCategory } from '../problem-category/entities/problem-category.entity';
+import { ProblemCategory } from './entities/problem-category.entity';
 
 @Injectable()
 export class ProblemCategoryService {
