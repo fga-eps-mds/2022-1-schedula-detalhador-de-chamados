@@ -5,8 +5,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 @Entity()
+@Unique(['name'])
 export class ProblemCategory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
