@@ -5,5 +5,6 @@ export class UpdateProblemCategoryDto extends PartialType(
   CreateProblemCategoryDto,
 ) {
   name: string;
+  description: string;
   problem_types: string;
 }

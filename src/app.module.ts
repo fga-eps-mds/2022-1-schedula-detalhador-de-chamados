@@ -1,5 +1,4 @@
 import { ProblemCategoryModule } from './problem-category/problem-category.module';
-import { config } from '../typeOrm.config';
 //import { IssueModule } from './issue/issue.module';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';

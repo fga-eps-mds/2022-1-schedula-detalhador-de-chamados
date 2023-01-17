@@ -19,10 +19,11 @@ export class ProblemCategoryService {
   async createProblemCategory(
     createProblemCategoryDto: CreateProblemCategoryDto,
   ): Promise<ProblemCategory> {
-    const { name, problem_types } = createProblemCategoryDto;
+    const { name, description, problem_types } = createProblemCategoryDto;
     //return this.problemCategoryRepository.save(createProblemCategoryDto);
     const problemCategory = this.problemCategoryRepository.create();
     problemCategory.name = name;
+    problemCategory.description = description;
     problemCategory.problem_types = problem_types;
     try {
       await problemCategory.save();
@@ -59,8 +60,11 @@ export class ProblemCategoryService {
     const problemCategory = await this.problemCategoryRepository.findOneBy({
       id: id,
     });
-    const { name, problem_types } = updateProblemCategoryDto;
+    const { name, description, problem_types } = updateProblemCategoryDto;
     problemCategory.name = name ? name : problemCategory.name;
+    problemCategory.description = description
+      ? description
+      : problemCategory.description;
     problemCategory.problem_types = problem_types
       ? problem_types
       : problemCategory.problem_types;

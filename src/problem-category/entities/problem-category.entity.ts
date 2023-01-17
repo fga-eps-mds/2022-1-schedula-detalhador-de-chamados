@@ -3,8 +3,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   Unique,
 } from 'typeorm';
 @Entity()
@@ -14,10 +12,8 @@ export class ProblemCategory extends BaseEntity {
   id: string;
   @Column()
   name: string;
+  @Column({ nullable: true })
+  description: string;
   @Column()
   problem_types: string;
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn()
-  updatedAt: Date;
 }
