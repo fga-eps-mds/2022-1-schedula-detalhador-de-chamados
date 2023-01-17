@@ -20,7 +20,6 @@ export class ProblemCategoryService {
     createProblemCategoryDto: CreateProblemCategoryDto,
   ): Promise<ProblemCategory> {
     const { name, description, problem_types } = createProblemCategoryDto;
-    //return this.problemCategoryRepository.save(createProblemCategoryDto);
     const problemCategory = this.problemCategoryRepository.create();
     problemCategory.name = name;
     problemCategory.description = description;

@@ -1,18 +1,9 @@
 import { CreateProblemCategoryDto } from './dto/create-problem-category.dto';
-import { ReturnProblemCategoryDto } from './dto/return-problem-category.dto';
 import { UpdateProblemCategoryDto } from './dto/update-problem-category.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProblemCategoryController } from './problem-category.controller';
 import { ProblemCategoryService } from './problem-category.service';
-import { ProblemCategory } from './entities/problem-category.entity';
 import { v4 as uuid } from 'uuid';
-import {
-  CacheInterceptor,
-  CacheModule,
-  Header,
-  NotFoundException,
-} from '@nestjs/common';
-import { Repository } from 'typeorm';
 
 describe('ProblemCategoryController', () => {
   let controller: ProblemCategoryController;
@@ -45,7 +36,7 @@ describe('ProblemCategoryController', () => {
             findProblemCategories: jest
               .fn()
               .mockResolvedValue(mockProblemCategoryEntityList),
-            findProblemCategory: jest
+            findProblemCategoryById: jest
               .fn()
               .mockResolvedValue(mockProblemCategoryEntityList[0]),
             updateProblemCategory: jest
@@ -83,8 +74,30 @@ describe('ProblemCategoryController', () => {
     });
   });
 
+  describe('findProblemCategories', () => {
+    it('should return an array of problem category entities succesfully', async () => {
+      const result = await controller.findProblemCategories();
+      expect(result).toEqual(mockProblemCategoryEntityList);
+      expect(service.findProblemCategories).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('findProblemCategory', () => {
+    it('should return a problem category entity succesfully', async () => {
+      const id = mockUuid;
+      const message = 'Categoria de problema encontrada';
+      const result = await controller.findProblemCategory(id);
+      expect(result).toMatchObject({
+        problemCategory: mockProblemCategoryEntityList[0],
+        message: message,
+      });
+      expect(service.findProblemCategoryById).toHaveBeenCalledTimes(1);
+      expect(service.findProblemCategoryById).toHaveBeenCalledWith(id);
+    });
+  });
+
   describe('updateProblemCategory', () => {
-    it('should update a problem category entity successfully', async () => {
+    it('should update a problem category entity with new data successfully', async () => {
       const id = mockUuid;
       const result = await controller.updateProblemCategory(
         id,
@@ -99,33 +112,12 @@ describe('ProblemCategoryController', () => {
     });
   });
 
-  describe('findProblemCategory', () => {
-    it('should return a problem category entity succesfully', async () => {
-      const id = mockUuid;
-
-      const result = await controller.findProblemCategory(id);
-      expect(result).toEqual(mockProblemCategoryEntityList[0]);
-      expect(service.findProblemCategoryById).toHaveBeenCalledTimes(1);
-      expect(service.findProblemCategoryById).toHaveBeenCalledWith(id);
-    });
-  });
-  describe('findProblemCategories', () => {
-    it('should return an array of problem category entities succesfully', async () => {
-      const id = mockUuid;
-
-      const result = await controller.findProblemCategories();
-      expect(result).toEqual(mockProblemCategoryEntityList);
-      expect(service.findProblemCategories).toHaveBeenCalledTimes(1);
-      expect(service.findProblemCategories).toHaveBeenCalledWith(id);
-    });
-  });
-
   describe('deleteProblemCategory', () => {
     it('should delete a problem category entity succesfully', async () => {
       const id = mockUuid;
-
+      const message = 'Categoria de problema excluída com sucesso';
       const result = await controller.deleteProblemCategory(id);
-      expect(result).toMatch('Categoria de problema excluída com sucesso');
+      expect(result).toMatchObject({ message: message });
       expect(service.deleteProblemCategory).toHaveBeenCalledTimes(1);
       expect(service.deleteProblemCategory).toHaveBeenCalledWith(id);
     });
