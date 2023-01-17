@@ -99,16 +99,34 @@ describe('ProblemCategoryController', () => {
     });
   });
 
+  describe('findProblemCategory', () => {
+    it('should return a problem category entity succesfully', async () => {
+      const id = mockUuid;
+
+      const result = await controller.findProblemCategory(id);
+      expect(result).toEqual(mockProblemCategoryEntityList[0]);
+      expect(service.findProblemCategoryById).toHaveBeenCalledTimes(1);
+      expect(service.findProblemCategoryById).toHaveBeenCalledWith(id);
+    });
+  });
+  describe('findProblemCategories', () => {
+    it('should return an array of problem category entities succesfully', async () => {
+      const id = mockUuid;
+
+      const result = await controller.findProblemCategories();
+      expect(result).toEqual(mockProblemCategoryEntityList);
+      expect(service.findProblemCategories).toHaveBeenCalledTimes(1);
+      expect(service.findProblemCategories).toHaveBeenCalledWith(id);
+    });
+  });
+
   describe('deleteProblemCategory', () => {
     it('should delete a problem category entity succesfully', async () => {
       const id = mockUuid;
 
       const result = await controller.deleteProblemCategory(id);
-
       expect(result).toMatch('Categoria de problema excluída com sucesso');
-
       expect(service.deleteProblemCategory).toHaveBeenCalledTimes(1);
-
       expect(service.deleteProblemCategory).toHaveBeenCalledWith(id);
     });
   });
