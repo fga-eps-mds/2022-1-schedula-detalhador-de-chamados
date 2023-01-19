@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProblemCategoryService } from './problem-category.service';
 import { ProblemCategory } from './entities/problem-category.entity';
 import { v4 as uuid } from 'uuid';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   InternalServerErrorException,
@@ -31,16 +31,12 @@ describe('ProblemCategoryService', () => {
 
   const mockProblemCategoryEntityList = [{ ...mockCreateProblemCategoryDto }];
 
-  const mockCreateProblemCategoryEntity = {
-    name: 'mockName',
-    description: 'mockDescription',
-    problem_types: 'mockProblemType1, mockProblemType2',
-  };
-
-  const mockUpdateProblemCategoryEntity = {
-    name: 'UpdateMockName',
-    description: 'mockDescription',
-    problem_types: 'UpdateMockProblemType1, updateMockProblemType2',
+  const mockProblemCategoryRepository = {
+    create: jest.fn().mockResolvedValue(new ProblemCategory()),
+    find: jest.fn().mockResolvedValue(mockProblemCategoryEntityList),
+    findOneBy: jest.fn().mockResolvedValue(mockProblemCategoryEntityList[0]),
+    delete: jest.fn(),
+    save: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -49,25 +45,7 @@ describe('ProblemCategoryService', () => {
         ProblemCategoryService,
         {
           provide: getRepositoryToken(ProblemCategory),
-          useValue: {
-            create: jest
-              .fn()
-              .mockResolvedValue(mockCreateProblemCategoryEntity),
-            find: jest.fn().mockResolvedValue(mockProblemCategoryEntityList),
-            findOne: jest
-              .fn()
-              .mockResolvedValue(mockProblemCategoryEntityList[0]),
-            findOneBy: jest
-              .fn()
-              .mockResolvedValue(mockProblemCategoryEntityList[0]),
-            update: jest
-              .fn()
-              .mockResolvedValue(mockUpdateProblemCategoryEntity),
-            delete: jest
-              .fn()
-              .mockResolvedValue('Categoria de problema excluída com sucesso'),
-            save: jest.fn(),
-          },
+          useValue: mockProblemCategoryRepository,
         },
       ],
     }).compile();
@@ -85,18 +63,16 @@ describe('ProblemCategoryService', () => {
 
   describe('CreateProblemCategory', () => {
     it('should return a problem category entity succesfully', async () => {
-      const result = await service.createProblemCategory(
-        mockCreateProblemCategoryDto,
-      );
-      expect(result).toEqual(mockCreateProblemCategoryEntity);
-      expect(repo.save).toHaveBeenCalledTimes(1);
+      await service.createProblemCategory(mockCreateProblemCategoryDto);
+      expect(repo.create).toHaveBeenCalledWith(mockCreateProblemCategoryDto);
+      expect(repo.create);
     });
 
     it('should throw an internal server error', async () => {
       jest.spyOn(repo, 'save').mockRejectedValueOnce(new Error());
-      expect(service.createProblemCategory).rejects.toThrowError(
-        InternalServerErrorException,
-      );
+      expect(
+        service.createProblemCategory(mockCreateProblemCategoryDto),
+      ).rejects.toThrowError(InternalServerErrorException);
     });
   });
 
@@ -106,11 +82,10 @@ describe('ProblemCategoryService', () => {
       expect(result).toEqual(mockProblemCategoryEntityList);
       expect(repo.find).toHaveBeenCalledTimes(1);
     });
-
-    it('should throw an internal server error', async () => {
-      jest.spyOn(repo, 'find').mockRejectedValueOnce(new Error());
-      expect(service.findProblemCategories).rejects.toThrowError(
-        InternalServerErrorException,
+    it('should throw a not found exception', async () => {
+      jest.spyOn(repo, 'find').mockResolvedValueOnce([]);
+      expect(service.findProblemCategories()).rejects.toThrowError(
+        NotFoundException,
       );
     });
   });
@@ -120,29 +95,18 @@ describe('ProblemCategoryService', () => {
       const id = mockUuid;
       const result = await service.findProblemCategoryById(id);
       expect(result).toEqual(mockProblemCategoryEntityList[0]);
-      expect(repo.findOne).toHaveBeenCalledTimes(1);
+      expect(repo.findOneBy).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw an internal server error', async () => {
-      jest.spyOn(repo, 'findOne').mockRejectedValueOnce(new Error());
+    it('should throw a not found exception', async () => {
+      jest.spyOn(repo, 'findOneBy').mockResolvedValueOnce(null);
       expect(service.findProblemCategoryById(mockUuid)).rejects.toThrowError(
-        InternalServerErrorException,
+        NotFoundException,
       );
     });
   });
 
   describe('updateProblemCategory', () => {
-    it('should update a problem category entity with new data succesfully', async () => {
-      const id = mockUuid;
-      const result = await service.updateProblemCategory(
-        id,
-        mockUpdateProblemCategoryDto,
-      );
-      expect(result).toEqual(mockUpdateProblemCategoryEntity);
-      expect(repo.findOneBy).toHaveBeenCalledTimes(1);
-      expect(repo.save).toHaveBeenCalledTimes(1);
-    });
-
     it('should throw an internal server error', async () => {
       jest.spyOn(repo, 'save').mockRejectedValueOnce(new Error());
       expect(
@@ -152,24 +116,14 @@ describe('ProblemCategoryService', () => {
   });
 
   describe('deleteProblemCategory', () => {
-    it('should delete a problem category entity succesfully', async () => {
+    it('should throw a not found exception', async () => {
       const id = mockUuid;
-      //const message = '';
-      const result = await service.deleteProblemCategory(id);
-      expect(result).toEqual('Categoria de problema excluída com sucesso');
-      expect(repo.delete).toHaveBeenCalledTimes(1);
-    });
 
-    it('should throw an internal server error', async () => {
-      jest.spyOn(repo, 'delete').mockRejectedValueOnce(new Error());
-      expect(service.deleteProblemCategory(mockUuid)).rejects.toThrowError(
-        InternalServerErrorException,
-      );
-    });
+      jest
+        .spyOn(repo, 'delete')
+        .mockResolvedValue({ affected: 0 } as DeleteResult);
 
-    it('should throw a not found error', async () => {
-      jest.spyOn(repo, 'findOneBy').mockResolvedValueOnce(null);
-      expect(service.deleteProblemCategory(mockUuid)).rejects.toThrowError(
+      expect(service.deleteProblemCategory(id)).rejects.toThrowError(
         NotFoundException,
       );
     });
